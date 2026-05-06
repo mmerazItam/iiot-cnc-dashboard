@@ -103,6 +103,16 @@ export default function App() {
 
   const gcodeTags = useMemo(() => splitCsvTags(displayData?.gcodes), [displayData]);
 
+  const g54Values = useMemo(() => {
+    const labels = ["X", "Y", "Z", "A", "B", "C"];
+    const values = splitCsvTags(displayData?.g54);
+
+    return labels.map((label, index) => ({
+      label,
+      value: values[index] ?? "UNAVAILABLE",
+    }));
+  }, [displayData]);
+
   const coolantTags = useMemo(() => {
     return Object.entries(displayData?.coolantStates || {}).map(
       ([label, value]) => `${label}: ${safeValue(value)}`
@@ -392,10 +402,6 @@ export default function App() {
               <dd>{formatSeconds(displayData?.spindleTime)}</dd>
             </div>
             <div className="status-row">
-              <dt>G54 Offset</dt>
-              <dd>{safeValue(displayData?.g54)}</dd>
-            </div>
-            <div className="status-row">
               <dt>Program</dt>
               <dd>{safeValue(displayData?.program)}</dd>
             </div>
@@ -424,6 +430,17 @@ export default function App() {
               <dd>{formatPercent(displayData?.feedrateOverride)}</dd>
             </div>
           </dl>
+          <div className="g54-offset-block">
+            <div className="g54-title">G54 Offset</div>
+            <div className="g54-grid" aria-label="G54 offset axis correspondence">
+              {g54Values.map((item) => (
+                <div key={item.label} className="g54-cell">
+                  <span>{item.label}</span>
+                  <strong>{item.value}</strong>
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
         <div className="coolant-panel">
           <TagList title="Coolant States" tags={coolantTags} />
