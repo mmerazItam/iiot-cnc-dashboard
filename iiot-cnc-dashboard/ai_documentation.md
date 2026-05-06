@@ -192,7 +192,7 @@ La app debe mostrar un dashboard para monitorear:
    - X Position
    - Y Position
    - Z Position
-   - Si Z no aparece en samples, mostrar "UNAVAILABLE in sample window" o "Last known from current"
+   - Si Z no aparece en samples, mostrar "Nan in sample window" o "Last known from current"
 
 6. Motion / Trajectory
    - Canvas HTML5 con trayectoria X/Y
@@ -492,9 +492,9 @@ Incluye helpers:
 - getLatestTextByDataItemId(doc, id)
 - getSeriesByDataItemId(doc, id)
 - toNumber(value)
-- safeValue(value, fallback = "UNAVAILABLE")
+- safeValue(value, fallback = "Nan")
 
-Si un valor no existe, no debe romper la app. Debe regresar null o "UNAVAILABLE".
+Si un valor no existe, no debe romper la app. Debe regresar null o "Nan".
 
 ============================================================
 LÓGICA DE ALARMAS Y COLORES
@@ -510,8 +510,8 @@ getAvailabilityStatus(availability)
 
 Reglas:
 
-1. Si Availability = UNAVAILABLE:
-   - Estado general: unavailable
+1. Si Availability = Nan:
+   - Estado general: Nan
    - Color: dark gray
 
 2. Si EmergencyStop = TRIGGERED:
@@ -543,7 +543,7 @@ Reglas:
    - Color: yellow/orange
 
 9. Si un dato falta:
-   - Mostrar "UNAVAILABLE"
+   - Mostrar "Nan"
    - Color: dark gray
 
 ============================================================
@@ -607,7 +607,7 @@ BOTTOM GRID:
    - X Position
    - Y Position
    - Z Position
-   - If Z missing in samples, show "UNAVAILABLE in sample window"
+   - If Z missing in samples, show "Nan in sample window"
    - If current value exists, show "Last known from current"
 
 DETAIL SECTION:
@@ -716,9 +716,9 @@ Pass/Fail: Pass if ACTIVE + spindle > 0 maps to green/active
 T-08:
 Description: Missing Z sample handling
 Input: Click Load Samples
-Expected Result: Z position shows UNAVAILABLE in sample window
+Expected Result: Z position shows Nan in sample window
 Actual Result: latestZ
-Pass/Fail: Pass if latestZ is null or unavailable
+Pass/Fail: Pass if latestZ is null or Nan
 
 T-09:
 Description: XML parse error handling
@@ -772,7 +772,7 @@ Generate README.md with:
 9. Known limitations:
    - Data is embedded, not live
    - No server polling
-   - Z may be unavailable in samples
+   - Z may be Nan in samples
    - AddressCodes are not parsed into individual widgets
 
 ============================================================
@@ -894,15 +894,15 @@ Genera al menos estos escenarios:
    - Axis positions frozen
    - Expected dashboard state: red / emergency stop
 
-6. UNAVAILABLE_STREAM
-   - Availability = UNAVAILABLE
-   - RunStatus = UNAVAILABLE
-   - MachineCondition = UNAVAILABLE
-   - ActiveAlarms = UNAVAILABLE
-   - EmergencyStop = UNAVAILABLE
+6. Nan_STREAM
+   - Availability = Nan
+   - RunStatus = Nan
+   - MachineCondition = Nan
+   - ActiveAlarms = Nan
+   - EmergencyStop = Nan
    - SpindleSpeed = null
    - No trajectory
-   - Expected dashboard state: dark gray / unavailable
+   - Expected dashboard state: dark gray / Nan
 
 7. SLOW_CYCLE_WARNING
    - Availability = AVAILABLE
@@ -924,7 +924,7 @@ Genera al menos estos escenarios:
    - SpindleSpeed ≈ 2000 rpm
    - Include X/Y samples
    - Do not include Z sample
-   - Expected behavior: Z Position displays "UNAVAILABLE in sample window", not 0
+   - Expected behavior: Z Position displays "Nan in sample window", not 0
 
 For each scenario, include:
 
@@ -993,7 +993,7 @@ Generate complete code for:
 
 Important:
 - Missing numeric values should be null, not 0.
-- Missing string values should be "UNAVAILABLE".
+- Missing string values should be "Nan".
 - Do not assume missing Z is 0.
 - Keep all units visible in the dashboard.
 - Keep the UI text in English."

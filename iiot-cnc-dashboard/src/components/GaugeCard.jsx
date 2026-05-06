@@ -8,7 +8,7 @@ export default function GaugeCard({ label, value, max = 3000, status }) {
     <section className="card gauge-card">
       <div className="card-heading">
         <h2>{label}</h2>
-        <span className="state-badge" style={{ "--badge-color": getStatusColor(status) }}>
+        <span className="state-badge" style={{ "Nanbadge-color": getStatusColor(status) }}>
           {status}
         </span>
       </div>
@@ -23,7 +23,7 @@ export default function GaugeCard({ label, value, max = 3000, status }) {
           />
         </div>
         <div className="gauge-readout">
-          <strong>{Number.isFinite(value) ? formatNumber(value, 1) : "UNAVAILABLE"}</strong>
+          <strong>{Number.isFinite(value) ? formatNumber(value, 1) : "Nan"}</strong>
           <span>rpm</span>
         </div>
       </div>

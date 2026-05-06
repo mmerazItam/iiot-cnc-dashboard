@@ -1,5 +1,5 @@
 function isMissing(value) {
-  return value === null || value === undefined || value === "" || value === "UNAVAILABLE";
+  return value === null || value === undefined || value === "" || value === "Nan";
 }
 
 export function getStatusColor(status) {
@@ -12,24 +12,24 @@ export function getStatusColor(status) {
     delayed: "#f59e0b",
     hold: "#eab308",
     idle: "#94a3b8",
-    unavailable: "#475569",
+    Nan: "#475569",
   };
 
-  return colors[status] || colors.unavailable;
+  return colors[status] || colors.Nan;
 }
 
 export function getAvailabilityStatus(availability) {
-  if (isMissing(availability) || availability === "UNAVAILABLE") {
-    return { status: "unavailable", label: "UNAVAILABLE" };
+  if (isMissing(availability) || availability === "Nan") {
+    return { status: "Nan", label: "Nan" };
   }
 
   return availability === "AVAILABLE"
     ? { status: "ok", label: "AVAILABLE" }
-    : { status: "unavailable", label: availability };
+    : { status: "Nan", label: availability };
 }
 
 export function getSpindleStatus(spindleSpeed, runStatus) {
-  if (!Number.isFinite(spindleSpeed)) return { status: "unavailable", label: "UNAVAILABLE" };
+  if (!Number.isFinite(spindleSpeed)) return { status: "Nan", label: "Nan" };
   if (runStatus === "FEED_HOLD") return { status: "hold", label: "FEED HOLD" };
   if (spindleSpeed > 0) return { status: "active", label: "SPINDLE RUNNING" };
   return { status: "idle", label: "SPINDLE IDLE" };
@@ -37,7 +37,7 @@ export function getSpindleStatus(spindleSpeed, runStatus) {
 
 export function getCycleStatus(thisCycle, lastCycle) {
   if (!Number.isFinite(thisCycle) || !Number.isFinite(lastCycle) || lastCycle <= 0) {
-    return { status: "unavailable", label: "UNAVAILABLE", progress: 0 };
+    return { status: "Nan", label: "Nan", progress: 0 };
   }
 
   const ratio = thisCycle / lastCycle;
@@ -51,7 +51,7 @@ export function getCycleStatus(thisCycle, lastCycle) {
 }
 
 export function getMachineState(data) {
-  if (!data) return { status: "unavailable", label: "NO DATA" };
+  if (!data) return { status: "Nan", label: "Nan" };
 
   const availability = data.availability;
   const activeAlarms = data.activeAlarms;
@@ -61,8 +61,8 @@ export function getMachineState(data) {
 
   // Alarm priority is intentionally explicit so operators see the most severe
   // machine state first, even if other process values still look normal.
-  if (isMissing(availability) || availability === "UNAVAILABLE") {
-    return { status: "unavailable", label: "UNAVAILABLE" };
+  if (isMissing(availability) || availability === "Nan") {
+    return { status: "Nan", label: "Nan" };
   }
 
   if (data.emergencyStop === "TRIGGERED") {
@@ -93,5 +93,5 @@ export function getMachineState(data) {
     return { status: "idle", label: "IDLE" };
   }
 
-  return { status: "unavailable", label: "UNAVAILABLE" };
+  return { status: "Nan", label: "Nan" };
 }

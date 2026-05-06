@@ -150,15 +150,15 @@ export default function TrajectoryReplay({
       <dl className="replay-readout">
         <div>
           <dt>Timestamp</dt>
-          <dd>{currentPoint?.timestamp ?? "UNAVAILABLE"}</dd>
+          <dd>{currentPoint?.timestamp ?? "Nan"}</dd>
         </div>
         <div>
           <dt>X Position</dt>
-          <dd>{currentPoint ? formatPosition(currentPoint.x) : "UNAVAILABLE"}</dd>
+          <dd>{currentPoint ? formatPosition(currentPoint.x) : "Nan"}</dd>
         </div>
         <div>
           <dt>Y Position</dt>
-          <dd>{currentPoint ? formatPosition(currentPoint.y) : "UNAVAILABLE"}</dd>
+          <dd>{currentPoint ? formatPosition(currentPoint.y) : "Nan"}</dd>
         </div>
         {currentGcode ? (
           <div>

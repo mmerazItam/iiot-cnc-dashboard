@@ -60,7 +60,7 @@ Implement `src/utils/xmlParsers.js` with:
 - `getLatestTextByDataItemId(doc, id)`
 - `getSeriesByDataItemId(doc, id)`
 - `toNumber(value)`
-- `safeValue(value, fallback = "UNAVAILABLE")`
+- `safeValue(value, fallback = "Nan")`
 
 Use these confirmed MTConnect IDs:
 
@@ -100,7 +100,7 @@ Parsing behavior:
 
 - `parseCurrentXml` returns the normalized current snapshot object requested in the prompt.
 - `parseSamplesXml` returns the normalized samples object requested in the prompt, including `trajectory: [{ timestamp, x, y }]`.
-- Missing values return `null` for numeric/state internals and `"UNAVAILABLE"` only at display formatting boundaries.
+- Missing values return `null` for numeric/state internals and `"Nan"` only at display formatting boundaries.
 - Parser errors are caught and returned as `{ source, error, parseOk: false }` so the app never crashes.
 - `MachineCondition` uses the tag name `Normal` as `"Normal"` when the MTConnect condition element is empty.
 
@@ -111,7 +111,7 @@ Implement `App.jsx` as the dashboard state coordinator:
 - `useState` for `currentData`, `sampleData`, `activeData`, `lastSource`, `error`, and optional replay state.
 - `useMemo` for derived metrics: machine state, cycle status, parts/hour, visible axis values, active G-codes, and test results.
 - `handleLoadCurrent`, `handleLoadSamples`, and `handleReset`.
-- Samples view should preserve current snapshot context where useful, especially Z position: show `"UNAVAILABLE in sample window"` and, if current data exists, `"Last known from current: -178.624 mm"`.
+- Samples view should preserve current snapshot context where useful, especially Z position: show `"Nan in sample window"` and, if current data exists, `"Last known from current: -178.624 mm"`.
 
 Implement components:
 
@@ -137,7 +137,7 @@ Implement `src/utils/alarmLogic.js`:
 
 Rules:
 
-- `UNAVAILABLE` availability -> `unavailable`, dark gray.
+- `Nan` availability -> `Nan`, dark gray.
 - `TRIGGERED` emergency stop -> `fault`, red.
 - Active alarms other than `"NO ACTIVE ALARMS"` -> `alarm`, red.
 - Non-normal condition -> `warning`, orange.
@@ -145,7 +145,7 @@ Rules:
 - `FEED_HOLD` -> `hold`, yellow.
 - spindle speed 0 without alarms -> `idle`, gray.
 - `ThisCycle > LastCycle * 1.1` -> delayed cycle, yellow/orange.
-- Missing data -> unavailable, dark gray.
+- Missing data -> Nan, dark gray.
 
 Implement `src/utils/formatters.js`:
 
@@ -188,7 +188,7 @@ Implement `App.css` as a single clean stylesheet:
   - Detail/Test sections below.
 - Cards with subtle borders, small radius, restrained shadows.
 - Large numeric values with always-visible units: `rpm`, `mm`, `s`, `%`, `parts`.
-- Colored badges for active, alarm, warning, idle, unavailable.
+- Colored badges for active, alarm, warning, idle, Nan.
 - Mobile layout collapses to one column without text overlap.
 
 ## README
@@ -216,7 +216,7 @@ Create `README.md` with:
 - Known limitations:
   - Embedded data, not live.
   - No server polling.
-  - Z may be unavailable in samples.
+  - Z may be Nan in samples.
   - AddressCodes not parsed into individual widgets.
 
 ## Test Plan
@@ -237,7 +237,7 @@ Manual/runtime validation:
   - Latest Y approximately `-119.6 mm`
   - M30Counter1 `5536 parts`
   - Trajectory has `16` plotted X/Y points
-  - Z shows unavailable in sample window, with last-known current value when available
+  - Z shows Nan in sample window, with last-known current value when available
 - Confirm TestPanel T-01 through T-09 reflects pass/manual/load-required states correctly.
 - Confirm invalid XML parser test returns an error state without crashing.
 - Confirm responsive layout on desktop and narrow mobile widths.

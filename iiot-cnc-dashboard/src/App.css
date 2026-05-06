@@ -201,8 +201,8 @@ h2 {
 .state-badge,
 .cycle-label,
 .test-result {
-  background: color-mix(in srgb, var(--badge-color, #475569) 16%, transparent);
-  border: 1px solid var(--badge-color, #475569);
+  background: color-mix(in srgb, var(Nanbadge-color, #475569) 16%, transparent);
+  border: 1px solid var(Nanbadge-color, #475569);
   border-radius: 999px;
   color: #f8fafc;
   display: inline-flex;
@@ -213,15 +213,15 @@ h2 {
 }
 
 .cycle-label.ok {
-  --badge-color: #22c55e;
+  Nanbadge-color: #22c55e;
 }
 
 .cycle-label.delayed {
-  --badge-color: #f59e0b;
+  Nanbadge-color: #f59e0b;
 }
 
-.cycle-label.unavailable {
-  --badge-color: #475569;
+.cycle-label.Nan {
+  Nanbadge-color: #475569;
 }
 
 .status-list {
@@ -262,7 +262,7 @@ h2 {
 }
 
 .metric-card {
-  border-left: 3px solid var(--metric-color, #22c55e);
+  border-left: 3px solid var(Nanmetric-color, #22c55e);
   padding: 14px;
 }
 
@@ -330,7 +330,7 @@ h2 {
   background: #f59e0b;
 }
 
-.progress-fill.unavailable {
+.progress-fill.Nan {
   background: #475569;
 }
 
@@ -544,11 +544,11 @@ td {
 }
 
 .test-result.pass {
-  --badge-color: #22c55e;
+  Nanbadge-color: #22c55e;
 }
 
 .test-result.fail {
-  --badge-color: #ef4444;
+  Nanbadge-color: #ef4444;
 }
 
 .test-result.manual,
@@ -556,7 +556,7 @@ td {
 .test-result.load-current-required,
 .test-result.load-samples-required,
 .test-result.load-data-required {
-  --badge-color: #eab308;
+  Nanbadge-color: #eab308;
 }
 
 @media (min-width: 1180px) {

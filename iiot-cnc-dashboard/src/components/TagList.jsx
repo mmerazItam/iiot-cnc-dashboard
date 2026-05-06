@@ -1,4 +1,4 @@
-export default function TagList({ title, tags, emptyLabel = "UNAVAILABLE" }) {
+export default function TagList({ title, tags, emptyLabel = "Nan" }) {
   return (
     <section className="card">
       <div className="card-heading">

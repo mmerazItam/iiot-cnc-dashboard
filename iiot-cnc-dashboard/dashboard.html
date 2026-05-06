@@ -10,31 +10,31 @@
    CSS CUSTOM PROPERTIES — color system & typography
    =================================================== */
 :root {
-  --bg-deep:    #07090b;
-  --bg-panel:   #0e1117;
-  --bg-card:    #141820;
-  --bg-highlight:#1c2230;
-  --border:     #1f2a3a;
-  --border-glow:#2a3a52;
+  Nanbg-deep:    #07090b;
+  Nanbg-panel:   #0e1117;
+  Nanbg-card:    #141820;
+  Nanbg-highlight:#1c2230;
+  Nanborder:     #1f2a3a;
+  Nanborder-glow:#2a3a52;
 
-  --amber:      #ffb300;
-  --amber-dim:  #7a5500;
-  --green:      #00e676;
-  --green-dim:  #004d26;
-  --cyan:       #00bcd4;
-  --cyan-dim:   #004d5a;
-  --red:        #f44336;
-  --red-dim:    #5a0800;
-  --yellow:     #ffee58;
-  --yellow-dim: #5a5000;
-  --gray:       #546e7a;
-  --gray-dim:   #1a2530;
-  --text-hi:    #e8eaf0;
-  --text-mid:   #7a8a9a;
-  --text-lo:    #3a4a5a;
+  Nanamber:      #ffb300;
+  Nanamber-dim:  #7a5500;
+  Nangreen:      #00e676;
+  Nangreen-dim:  #004d26;
+  Nancyan:       #00bcd4;
+  Nancyan-dim:   #004d5a;
+  Nanred:        #f44336;
+  Nanred-dim:    #5a0800;
+  Nanyellow:     #ffee58;
+  Nanyellow-dim: #5a5000;
+  Nangray:       #546e7a;
+  Nangray-dim:   #1a2530;
+  Nantext-hi:    #e8eaf0;
+  Nantext-mid:   #7a8a9a;
+  Nantext-lo:    #3a4a5a;
 
-  --font-mono:  'Share Tech Mono', monospace;
-  --font-ui:    'Barlow Condensed', sans-serif;
+  Nanfont-mono:  'Share Tech Mono', monospace;
+  Nanfont-ui:    'Barlow Condensed', sans-serif;
 }
 
 /* ===================================================
@@ -43,9 +43,9 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 14px; }
 body {
-  background: var(--bg-deep);
-  color: var(--text-hi);
-  font-family: var(--font-ui);
+  background: var(Nanbg-deep);
+  color: var(Nantext-hi);
+  font-family: var(Nanfont-ui);
   min-height: 100vh;
   overflow-x: hidden;
 }
@@ -70,8 +70,8 @@ body::before {
    HEADER
    =================================================== */
 header {
-  background: var(--bg-panel);
-  border-bottom: 2px solid var(--amber);
+  background: var(Nanbg-panel);
+  border-bottom: 2px solid var(Nanamber);
   padding: 10px 24px;
   display: flex;
   align-items: center;
@@ -83,9 +83,9 @@ header {
   display: flex; align-items: center; gap: 16px;
 }
 .machine-badge {
-  background: var(--amber);
+  background: var(Nanamber);
   color: #000;
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 11px;
   font-weight: bold;
   padding: 4px 10px;
@@ -93,39 +93,39 @@ header {
   clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
 }
 .header-title {
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 18px;
-  color: var(--text-hi);
+  color: var(Nantext-hi);
   letter-spacing: 3px;
 }
-.header-title span { color: var(--amber); }
+.header-title span { color: var(Nanamber); }
 .header-sub {
   font-size: 11px;
-  color: var(--text-mid);
+  color: var(Nantext-mid);
   letter-spacing: 2px;
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
 }
 .header-right {
   display: flex; align-items: center; gap: 12px;
 }
 #clock {
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 16px;
-  color: var(--cyan);
+  color: var(Nancyan);
   letter-spacing: 2px;
 }
 .data-source-label {
   font-size: 10px;
-  color: var(--text-mid);
-  font-family: var(--font-mono);
+  color: var(Nantext-mid);
+  font-family: var(Nanfont-mono);
   letter-spacing: 1px;
 }
 #data-source-tag {
   font-size: 11px;
-  color: var(--amber);
-  font-family: var(--font-mono);
+  color: var(Nanamber);
+  font-family: var(Nanfont-mono);
   padding: 2px 8px;
-  border: 1px solid var(--amber-dim);
+  border: 1px solid var(Nanamber-dim);
   background: rgba(255,179,0,0.05);
 }
 
@@ -133,8 +133,8 @@ header {
    CONTROL BAR — load buttons
    =================================================== */
 .control-bar {
-  background: var(--bg-panel);
-  border-bottom: 1px solid var(--border);
+  background: var(Nanbg-panel);
+  border-bottom: 1px solid var(Nanborder);
   padding: 10px 24px;
   display: flex;
   align-items: center;
@@ -143,13 +143,13 @@ header {
 }
 .control-bar label {
   font-size: 11px;
-  color: var(--text-mid);
-  font-family: var(--font-mono);
+  color: var(Nantext-mid);
+  font-family: var(Nanfont-mono);
   letter-spacing: 1px;
   margin-right: 4px;
 }
 .btn {
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 12px;
   letter-spacing: 1px;
   padding: 7px 18px;
@@ -160,41 +160,41 @@ header {
   background: transparent;
 }
 .btn-current {
-  color: var(--cyan);
-  border-color: var(--cyan-dim);
+  color: var(Nancyan);
+  border-color: var(Nancyan-dim);
 }
 .btn-current:hover {
   background: rgba(0,188,212,0.12);
-  border-color: var(--cyan);
+  border-color: var(Nancyan);
   box-shadow: 0 0 12px rgba(0,188,212,0.3);
 }
 .btn-samples {
-  color: var(--amber);
-  border-color: var(--amber-dim);
+  color: var(Nanamber);
+  border-color: var(Nanamber-dim);
 }
 .btn-samples:hover {
   background: rgba(255,179,0,0.12);
-  border-color: var(--amber);
+  border-color: var(Nanamber);
   box-shadow: 0 0 12px rgba(255,179,0,0.3);
 }
 .btn-live {
-  color: var(--green);
-  border-color: var(--green-dim);
+  color: var(Nangreen);
+  border-color: var(Nangreen-dim);
 }
 .btn-live:hover, .btn-live.active {
   background: rgba(0,230,118,0.12);
-  border-color: var(--green);
+  border-color: var(Nangreen);
   box-shadow: 0 0 12px rgba(0,230,118,0.3);
 }
 .btn-live.active::before {
   content: '● ';
   animation: blink 1s infinite;
 }
-.separator { width: 1px; height: 24px; background: var(--border); }
+.separator { width: 1px; height: 24px; background: var(Nanborder); }
 .status-msg {
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 11px;
-  color: var(--text-mid);
+  color: var(Nantext-mid);
   margin-left: auto;
 }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
@@ -207,7 +207,7 @@ header {
   grid-template-columns: 1fr 1fr 1fr 340px;
   grid-template-rows: auto auto auto;
   gap: 1px;
-  background: var(--border);
+  background: var(Nanborder);
   margin: 0;
   min-height: calc(100vh - 92px);
 }
@@ -216,30 +216,30 @@ header {
    PANEL / CARD BASE
    =================================================== */
 .panel {
-  background: var(--bg-panel);
+  background: var(Nanbg-panel);
   padding: 0;
   position: relative;
   overflow: hidden;
 }
 .panel-header {
-  background: var(--bg-card);
+  background: var(Nanbg-card);
   padding: 8px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(Nanborder);
 }
 .panel-title {
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 10px;
   letter-spacing: 3px;
-  color: var(--text-mid);
+  color: var(Nantext-mid);
   text-transform: uppercase;
 }
 .panel-id {
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 9px;
-  color: var(--text-lo);
+  color: var(Nantext-lo);
   letter-spacing: 1px;
 }
 .panel-body {
@@ -251,21 +251,21 @@ header {
    =================================================== */
 .status-panel {
   grid-column: 1 / -1;
-  background: var(--bg-panel);
-  border-bottom: 1px solid var(--border);
+  background: var(Nanbg-panel);
+  border-bottom: 1px solid var(Nanborder);
 }
 .status-row {
   display: grid;
   grid-template-columns: 260px 1fr 1fr 1fr 1fr 1fr;
   gap: 1px;
-  background: var(--border);
+  background: var(Nanborder);
 }
 
 /* ===================================================
    STATE BADGE
    =================================================== */
 .state-block {
-  background: var(--bg-card);
+  background: var(Nanbg-card);
   padding: 20px 20px;
   display: flex;
   flex-direction: column;
@@ -275,14 +275,14 @@ header {
   position: relative;
 }
 .state-label {
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 9px;
   letter-spacing: 3px;
-  color: var(--text-mid);
+  color: var(Nantext-mid);
   text-transform: uppercase;
 }
 .state-value {
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 20px;
   letter-spacing: 2px;
   font-weight: bold;
@@ -301,41 +301,41 @@ header {
 }
 
 /* State color classes */
-.state-active   { color: var(--green); }
-.state-active .state-dot { background: var(--green); box-shadow: 0 0 8px var(--green); }
-.state-idle     { color: var(--gray); }
-.state-idle .state-dot { background: var(--gray); animation: none; }
-.state-warn     { color: var(--yellow); }
-.state-warn .state-dot { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
-.state-fault    { color: var(--red); }
-.state-fault .state-dot { background: var(--red); box-shadow: 0 0 8px var(--red); }
-.state-nodata   { color: var(--text-lo); }
-.state-nodata .state-dot { background: var(--text-lo); animation: none; }
+.state-active   { color: var(Nangreen); }
+.state-active .state-dot { background: var(Nangreen); box-shadow: 0 0 8px var(Nangreen); }
+.state-idle     { color: var(Nangray); }
+.state-idle .state-dot { background: var(Nangray); animation: none; }
+.state-warn     { color: var(Nanyellow); }
+.state-warn .state-dot { background: var(Nanyellow); box-shadow: 0 0 8px var(Nanyellow); }
+.state-fault    { color: var(Nanred); }
+.state-fault .state-dot { background: var(Nanred); box-shadow: 0 0 8px var(Nanred); }
+.state-nodata   { color: var(Nantext-lo); }
+.state-nodata .state-dot { background: var(Nantext-lo); animation: none; }
 
 /* Primary run-status badge (larger) */
 .run-status-block {
   padding: 20px 24px;
-  background: var(--bg-card);
+  background: var(Nanbg-card);
   min-width: 260px;
 }
 .run-status-name {
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 9px;
   letter-spacing: 3px;
-  color: var(--text-mid);
+  color: var(Nantext-mid);
   margin-bottom: 8px;
 }
 .run-status-value {
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 26px;
   font-weight: bold;
   letter-spacing: 3px;
   transition: all 0.3s;
 }
 .run-status-subtext {
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 9px;
-  color: var(--text-mid);
+  color: var(Nantext-mid);
   margin-top: 4px;
   letter-spacing: 1px;
 }
@@ -343,7 +343,7 @@ header {
   height: 3px;
   width: 100%;
   margin-top: 8px;
-  background: var(--bg-highlight);
+  background: var(Nanbg-highlight);
   position: relative;
   overflow: hidden;
 }
@@ -362,34 +362,34 @@ header {
    METRIC CARD (small stat)
    =================================================== */
 .metric {
-  background: var(--bg-card);
+  background: var(Nanbg-card);
   padding: 16px 18px;
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 .metric-label {
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 9px;
   letter-spacing: 2px;
-  color: var(--text-mid);
+  color: var(Nantext-mid);
 }
 .metric-value {
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 22px;
-  color: var(--text-hi);
+  color: var(Nantext-hi);
   letter-spacing: 1px;
   transition: color 0.3s;
 }
 .metric-unit {
   font-size: 11px;
-  color: var(--text-mid);
+  color: var(Nantext-mid);
   margin-left: 4px;
 }
 .metric-sub {
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 9px;
-  color: var(--text-mid);
+  color: var(Nantext-mid);
   letter-spacing: 1px;
 }
 
@@ -403,26 +403,26 @@ header {
   padding: 16px;
 }
 .gauge-svg { overflow: visible; }
-.gauge-track { fill: none; stroke: var(--bg-highlight); stroke-width: 10; stroke-linecap: round; }
+.gauge-track { fill: none; stroke: var(Nanbg-highlight); stroke-width: 10; stroke-linecap: round; }
 .gauge-fill  { fill: none; stroke-width: 10; stroke-linecap: round;
                transition: stroke-dashoffset 0.6s cubic-bezier(.4,0,.2,1); }
 .gauge-text-val {
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 26px;
-  fill: var(--text-hi);
+  fill: var(Nantext-hi);
   text-anchor: middle;
   dominant-baseline: middle;
 }
 .gauge-text-unit {
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 10px;
-  fill: var(--text-mid);
+  fill: var(Nantext-mid);
   text-anchor: middle;
 }
 .gauge-text-label {
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 9px;
-  fill: var(--text-mid);
+  fill: var(Nantext-mid);
   text-anchor: middle;
   letter-spacing: 2px;
 }
@@ -435,43 +435,43 @@ header {
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(Nanborder);
   transition: background 0.2s;
 }
 .axis-row:last-child { border-bottom: none; }
-.axis-row:hover { background: var(--bg-highlight); }
+.axis-row:hover { background: var(Nanbg-highlight); }
 .axis-name {
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 18px;
   font-weight: bold;
-  color: var(--cyan);
+  color: var(Nancyan);
   width: 24px;
 }
 .axis-bar-track {
   flex: 1;
   height: 4px;
-  background: var(--bg-highlight);
+  background: var(Nanbg-highlight);
   border-radius: 0;
   position: relative;
   overflow: visible;
 }
 .axis-bar-fill {
   height: 100%;
-  background: var(--cyan);
+  background: var(Nancyan);
   transition: width 0.5s cubic-bezier(.4,0,.2,1);
-  box-shadow: 0 0 8px var(--cyan);
+  box-shadow: 0 0 8px var(Nancyan);
 }
 .axis-value {
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 16px;
-  color: var(--text-hi);
+  color: var(Nantext-hi);
   text-align: right;
   min-width: 90px;
 }
 .axis-unit {
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 10px;
-  color: var(--text-mid);
+  color: var(Nantext-mid);
   min-width: 20px;
 }
 
@@ -483,25 +483,25 @@ header {
   text-align: center;
 }
 .counter-num {
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 52px;
-  color: var(--amber);
+  color: var(Nanamber);
   letter-spacing: 4px;
   line-height: 1;
   text-shadow: 0 0 20px rgba(255,179,0,0.4);
   transition: all 0.3s;
 }
 .counter-label {
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 9px;
-  color: var(--text-mid);
+  color: var(Nantext-mid);
   letter-spacing: 3px;
   margin-top: 6px;
 }
 .counter-sub {
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 11px;
-  color: var(--text-mid);
+  color: var(Nantext-mid);
   margin-top: 8px;
 }
 
@@ -509,34 +509,34 @@ header {
    CYCLE TIMER + PROGRESS BAR
    =================================================== */
 .cycle-timer {
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 32px;
-  color: var(--text-hi);
+  color: var(Nantext-hi);
   letter-spacing: 3px;
   padding: 12px 16px 4px;
   transition: color 0.3s;
 }
 .cycle-progress-outer {
   height: 6px;
-  background: var(--bg-highlight);
+  background: var(Nanbg-highlight);
   margin: 8px 16px 4px;
   position: relative;
 }
 .cycle-progress-fill {
   height: 100%;
-  background: var(--green);
+  background: var(Nangreen);
   transition: width 0.5s, background 0.3s;
-  box-shadow: 0 0 8px var(--green);
+  box-shadow: 0 0 8px var(Nangreen);
 }
-.cycle-progress-fill.warn  { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
-.cycle-progress-fill.over  { background: var(--red); box-shadow: 0 0 8px var(--red); }
+.cycle-progress-fill.warn  { background: var(Nanyellow); box-shadow: 0 0 8px var(Nanyellow); }
+.cycle-progress-fill.over  { background: var(Nanred); box-shadow: 0 0 8px var(Nanred); }
 .cycle-stats {
   display: flex;
   justify-content: space-between;
   padding: 4px 16px 12px;
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 10px;
-  color: var(--text-mid);
+  color: var(Nantext-mid);
 }
 
 /* ===================================================
@@ -549,17 +549,17 @@ header {
   padding: 12px 16px;
 }
 .code-chip {
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 11px;
   padding: 3px 8px;
-  border: 1px solid var(--border-glow);
-  background: var(--bg-highlight);
-  color: var(--cyan);
+  border: 1px solid var(Nanborder-glow);
+  background: var(Nanbg-highlight);
+  color: var(Nancyan);
   letter-spacing: 1px;
   transition: all 0.2s;
 }
-.code-chip.motion { color: var(--amber); border-color: var(--amber-dim); }
-.code-chip.active { border-color: var(--cyan-dim); }
+.code-chip.motion { color: var(Nanamber); border-color: var(Nanamber-dim); }
+.code-chip.active { border-color: var(Nancyan-dim); }
 
 /* ===================================================
    TOOL PATH CANVAS PANEL
@@ -567,7 +567,7 @@ header {
 .trajectory-panel {
   grid-column: 4;
   grid-row: 2 / 5;
-  background: var(--bg-panel);
+  background: var(Nanbg-panel);
   display: flex;
   flex-direction: column;
 }
@@ -581,24 +581,24 @@ header {
   gap: 8px;
 }
 #trajectoryCanvas {
-  background: var(--bg-deep);
-  border: 1px solid var(--border-glow);
+  background: var(Nanbg-deep);
+  border: 1px solid var(Nanborder-glow);
   display: block;
 }
 .traj-legend {
   display: flex;
   gap: 16px;
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 9px;
-  color: var(--text-mid);
+  color: var(Nantext-mid);
   letter-spacing: 1px;
 }
 .traj-legend span::before {
   content: '─';
   margin-right: 4px;
 }
-.traj-legend .path-legend::before { color: var(--gray); }
-.traj-legend .point-legend::before { content: '●'; color: var(--cyan); }
+.traj-legend .path-legend::before { color: var(Nangray); }
+.traj-legend .point-legend::before { content: '●'; color: var(Nancyan); }
 
 /* ===================================================
    REPLAY CONTROL
@@ -608,34 +608,34 @@ header {
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(Nanborder);
 }
 .replay-controls button {
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 10px;
   padding: 4px 10px;
-  border: 1px solid var(--border-glow);
-  background: var(--bg-highlight);
-  color: var(--text-hi);
+  border: 1px solid var(Nanborder-glow);
+  background: var(Nanbg-highlight);
+  color: var(Nantext-hi);
   cursor: pointer;
   letter-spacing: 1px;
 }
-.replay-controls button:hover { border-color: var(--cyan); color: var(--cyan); }
+.replay-controls button:hover { border-color: var(Nancyan); color: var(Nancyan); }
 #replayProgress {
   flex: 1;
   height: 2px;
-  background: var(--bg-highlight);
+  background: var(Nanbg-highlight);
   position: relative;
 }
 #replayFill {
   height: 100%;
-  background: var(--cyan);
+  background: var(Nancyan);
   transition: width 0.1s;
 }
 #replayStep {
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 9px;
-  color: var(--text-mid);
+  color: var(Nantext-mid);
   min-width: 40px;
   text-align: right;
 }
@@ -685,13 +685,13 @@ header {
    =================================================== */
 .alarm-strip {
   padding: 10px 16px;
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 11px;
   letter-spacing: 1px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(Nanborder);
 }
-.alarm-strip.ok    { color: var(--green); background: rgba(0,230,118,0.04); }
-.alarm-strip.fault { color: var(--red);   background: rgba(244,67,54,0.08);
+.alarm-strip.ok    { color: var(Nangreen); background: rgba(0,230,118,0.04); }
+.alarm-strip.fault { color: var(Nanred);   background: rgba(244,67,54,0.08);
                      animation: alert-flash 1.5s ease-in-out infinite; }
 @keyframes alert-flash { 0%,100%{opacity:1} 50%{opacity:0.6} }
 
@@ -702,46 +702,46 @@ header {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1px;
-  background: var(--border);
+  background: var(Nanborder);
 }
 .override-item {
-  background: var(--bg-card);
+  background: var(Nanbg-card);
   padding: 10px 14px;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 .override-label {
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 9px;
-  color: var(--text-mid);
+  color: var(Nantext-mid);
   letter-spacing: 1px;
   flex: 1;
 }
 .override-val {
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 16px;
-  color: var(--text-hi);
+  color: var(Nantext-hi);
 }
-.override-pct { font-size: 10px; color: var(--text-mid); }
+.override-pct { font-size: 10px; color: var(Nantext-mid); }
 
 /* ===================================================
    WORK OFFSET DISPLAY
    =================================================== */
 .offset-display {
   padding: 10px 16px;
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 11px;
 }
 .offset-row {
   display: flex;
   justify-content: space-between;
   padding: 3px 0;
-  border-bottom: 1px solid var(--border);
-  color: var(--text-mid);
+  border-bottom: 1px solid var(Nanborder);
+  color: var(Nantext-mid);
 }
 .offset-row:last-child { border-bottom: none; }
-.offset-row span { color: var(--text-hi); }
+.offset-row span { color: var(Nantext-hi); }
 
 /* ===================================================
    SPINDLE TIME STRIP
@@ -750,25 +750,25 @@ header {
   padding: 8px 16px;
   display: flex;
   justify-content: space-between;
-  border-top: 1px solid var(--border);
-  font-family: var(--font-mono);
+  border-top: 1px solid var(Nanborder);
+  font-family: var(Nanfont-mono);
   font-size: 10px;
-  color: var(--text-mid);
+  color: var(Nantext-mid);
 }
-.spindle-time-strip span { color: var(--text-hi); }
+.spindle-time-strip span { color: var(Nantext-hi); }
 
 /* ===================================================
    FOOTER
    =================================================== */
 footer {
-  background: var(--bg-panel);
-  border-top: 1px solid var(--border);
+  background: var(Nanbg-panel);
+  border-top: 1px solid var(Nanborder);
   padding: 6px 24px;
   display: flex;
   justify-content: space-between;
-  font-family: var(--font-mono);
+  font-family: var(Nanfont-mono);
   font-size: 9px;
-  color: var(--text-lo);
+  color: var(Nantext-lo);
   letter-spacing: 1px;
 }
 
@@ -792,9 +792,9 @@ footer {
 </head>
 <body>
 
-<!-- ================================================
+<!Nan ================================================
      HEADER
-     ================================================ -->
+     ================================================ Nan>
 <header>
   <div class="header-left">
     <div class="machine-badge">TM-1P</div>
@@ -806,75 +806,75 @@ footer {
   <div class="header-right">
     <div>
       <div class="data-source-label">DATA SOURCE</div>
-      <div id="data-source-tag">-- NO DATA --</div>
+      <div id="data-source-tag">Nan Nan Nan</div>
     </div>
-    <div id="clock">--:--:--</div>
+    <div id="clock">Nan:Nan:Nan</div>
   </div>
 </header>
 
-<!-- ================================================
+<!Nan ================================================
      CONTROL BAR
-     ================================================ -->
+     ================================================ Nan>
 <div class="control-bar">
   <label>LOAD DATA:</label>
-  <!-- Button loads the embedded Trace_current.xml snapshot data -->
+  <!Nan Button loads the embedded Trace_current.xml snapshot data Nan>
   <button class="btn btn-current" onclick="loadCurrent()">⬡ LOAD CURRENT SNAPSHOT</button>
-  <!-- Button loads the embedded Trace_samples.xml time-series data -->
+  <!Nan Button loads the embedded Trace_samples.xml time-series data Nan>
   <button class="btn btn-samples" onclick="loadSamples()">⬡ LOAD SAMPLES + TRAJECTORY</button>
   <div class="separator"></div>
-  <!-- Button fetches live data from the MTConnect endpoint -->
+  <!Nan Button fetches live data from the MTConnect endpoint Nan>
   <button class="btn btn-live" id="liveBtn" onclick="toggleLive()">⬡ LIVE FEED (148.205.38.221:8082)</button>
-  <div class="status-msg" id="statusMsg">No data loaded — click a button above</div>
+  <div class="status-msg" id="statusMsg">Nan loaded — click a button above</div>
 </div>
 
-<!-- ================================================
+<!Nan ================================================
      MAIN DASHBOARD GRID
-     ================================================ -->
+     ================================================ Nan>
 <div class="main-grid">
 
-  <!-- ── TOP STATUS BAR ── -->
+  <!Nan ── TOP STATUS BAR ── Nan>
   <div class="status-panel">
     <div class="status-row">
 
-      <!-- Run Status (primary indicator) -->
+      <!Nan Run Status (primary indicator) Nan>
       <div class="run-status-block">
         <div class="run-status-name">RUN STATUS</div>
         <div class="run-status-value state-nodata" id="runStatusVal">
-          <span class="state-dot"></span>NO DATA
+          <span class="state-dot"></span>Nan
         </div>
         <div class="run-status-subtext" id="runStatusSub">EXECUTION STATE</div>
         <div class="run-status-bar" id="runStatusBar"></div>
       </div>
 
-      <!-- Emergency Stop -->
+      <!Nan Emergency Stop Nan>
       <div class="state-block">
         <div class="state-label">ESTOP</div>
         <div class="state-value state-nodata" id="estopVal">—</div>
         <div class="metric-sub" id="estopSub">EMERGENCY STOP</div>
       </div>
 
-      <!-- Machine Condition -->
+      <!Nan Machine Condition Nan>
       <div class="state-block">
         <div class="state-label">CONDITION</div>
         <div class="state-value state-nodata" id="conditionVal">—</div>
         <div class="metric-sub">MACHINE COND.</div>
       </div>
 
-      <!-- Controller Mode -->
+      <!Nan Controller Mode Nan>
       <div class="state-block">
         <div class="state-label">MODE</div>
         <div class="state-value state-nodata" id="modeVal">—</div>
         <div class="metric-sub">CONTROLLER MODE</div>
       </div>
 
-      <!-- Availability -->
+      <!Nan Availability Nan>
       <div class="state-block">
         <div class="state-label">AVAILABILITY</div>
         <div class="state-value state-nodata" id="availVal">—</div>
         <div class="metric-sub">DEVICE STATUS</div>
       </div>
 
-      <!-- Active Alarms -->
+      <!Nan Active Alarms Nan>
       <div class="state-block" style="flex:1">
         <div class="state-label">ALARMS</div>
         <div class="state-value state-nodata" id="alarmVal" style="font-size:13px">—</div>
@@ -884,30 +884,30 @@ footer {
     </div>
   </div>
 
-  <!-- ── SPINDLE PANEL ── -->
+  <!Nan ── SPINDLE PANEL ── Nan>
   <div class="panel spindle-panel">
     <div class="panel-header">
       <span class="panel-title">SPINDLE</span>
       <span class="panel-id">sspeed · ssovrd</span>
     </div>
     <div class="panel-body" style="padding:0">
-      <!-- Arc gauge drawn via SVG — shows SpindleSpeed vs 7500 rpm max -->
+      <!Nan Arc gauge drawn via SVG — shows SpindleSpeed vs 7500 rpm max Nan>
       <div class="gauge-wrapper">
         <svg class="gauge-svg" width="200" height="130" viewBox="0 0 200 130">
-          <!-- Track arc: 220° sweep centered on bottom half -->
+          <!Nan Track arc: 220° sweep centered on bottom half Nan>
           <path class="gauge-track"
                 d="M 25,110 A 85,85 0 1,1 175,110"
                 id="gTrack"/>
-          <!-- Fill arc: updated via JS using stroke-dasharray trick -->
+          <!Nan Fill arc: updated via JS using stroke-dasharray trick Nan>
           <path class="gauge-fill"
                 d="M 25,110 A 85,85 0 1,1 175,110"
                 id="gFill"
                 stroke="#546e7a"
                 style="stroke-dasharray:267; stroke-dashoffset:267;"/>
-          <!-- Center text: current RPM -->
+          <!Nan Center text: current RPM Nan>
           <text class="gauge-text-val" x="100" y="96" id="gVal">—</text>
           <text class="gauge-text-unit" x="100" y="114" id="gUnit">RPM</text>
-          <!-- Min/max labels -->
+          <!Nan Min/max labels Nan>
           <text x="18" y="126" fill="#3a4a5a" font-size="9" font-family="'Share Tech Mono',monospace">0</text>
           <text x="155" y="126" fill="#3a4a5a" font-size="9" font-family="'Share Tech Mono',monospace">7500</text>
         </svg>
@@ -919,7 +919,7 @@ footer {
     </div>
   </div>
 
-  <!-- ── CYCLE TIMER PANEL ── -->
+  <!Nan ── CYCLE TIMER PANEL ── Nan>
   <div class="panel cycle-panel">
     <div class="panel-header">
       <span class="panel-title">CYCLE TIMER</span>
@@ -929,9 +929,9 @@ footer {
       <div style="padding:12px 16px 0">
         <div class="metric-label">THIS CYCLE</div>
       </div>
-      <!-- Large cycle time display -->
+      <!Nan Large cycle time display Nan>
       <div class="cycle-timer" id="thisCycleVal">—</div>
-      <!-- Progress bar: ThisCycle / LastCycle, warn if >110% -->
+      <!Nan Progress bar: ThisCycle / LastCycle, warn if >110% Nan>
       <div class="cycle-progress-outer">
         <div class="cycle-progress-fill" id="cycleProgressBar" style="width:0%"></div>
       </div>
@@ -944,14 +944,14 @@ footer {
         <div class="metric-label">CYCLE REMAINING TIME</div>
         <div class="metric-value" style="font-size:16px" id="cycleRemainVal">—</div>
       </div>
-      <!-- Parts per hour estimate based on LastCycle -->
+      <!Nan Parts per hour estimate based on LastCycle Nan>
       <div class="spindle-time-strip">
         EST. PPH <span id="pphVal">—</span> &nbsp;|&nbsp; MACHINE RUNTIME <span id="runtimeVal">—</span>
       </div>
     </div>
   </div>
 
-  <!-- ── PRODUCTION COUNTER PANEL ── -->
+  <!Nan ── PRODUCTION COUNTER PANEL ── Nan>
   <div class="panel production-panel">
     <div class="panel-header">
       <span class="panel-title">PRODUCTION</span>
@@ -959,18 +959,18 @@ footer {
     </div>
     <div class="panel-body" style="padding:0">
       <div class="counter-display">
-        <!-- M30Counter1: total parts completed -->
+        <!Nan M30Counter1: total parts completed Nan>
         <div class="counter-num" id="m30c1Val">—</div>
         <div class="counter-label">PARTS COMPLETED (M30 COUNTER)</div>
         <div class="counter-sub" id="m30SyncStatus">—</div>
       </div>
-      <!-- Secondary metric: MachineRunTime -->
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--border)">
-        <div class="metric" style="background:var(--bg-card)">
+      <!Nan Secondary metric: MachineRunTime Nan>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(Nanborder)">
+        <div class="metric" style="background:var(Nanbg-card)">
           <div class="metric-label">M30 COUNTER 1</div>
           <div class="metric-value" id="m30c1b" style="font-size:16px">—</div>
         </div>
-        <div class="metric" style="background:var(--bg-card)">
+        <div class="metric" style="background:var(Nanbg-card)">
           <div class="metric-label">M30 COUNTER 2</div>
           <div class="metric-value" id="m30c2Val" style="font-size:16px">—</div>
         </div>
@@ -978,32 +978,32 @@ footer {
     </div>
   </div>
 
-  <!-- ── TRAJECTORY PANEL (right column, spans multiple rows) ── -->
+  <!Nan ── TRAJECTORY PANEL (right column, spans multiple rows) ── Nan>
   <div class="panel trajectory-panel">
     <div class="panel-header">
       <span class="panel-title">TOOL TRAJECTORY X/Y</span>
       <span class="panel-id">x_axis · y_axis</span>
     </div>
     <div class="trajectory-canvas-wrap">
-      <!-- HTML5 Canvas for drawing the X/Y tool path -->
-      <!-- X range: -500 to -300 mm, Y range: -200 to -50 mm -->
+      <!Nan HTML5 Canvas for drawing the X/Y tool path Nan>
+      <!Nan X range: -500 to -300 mm, Y range: -200 to -50 mm Nan>
       <canvas id="trajectoryCanvas" width="300" height="260"></canvas>
       <div class="traj-legend">
         <span class="path-legend">PATH TRACE</span>
         <span class="point-legend">CURRENT POS</span>
       </div>
-      <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-mid);text-align:center;letter-spacing:1px" id="trajInfo">
+      <div style="font-family:var(Nanfont-mono);font-size:9px;color:var(Nantext-mid);text-align:center;letter-spacing:1px" id="trajInfo">
         Load samples to display trajectory
       </div>
     </div>
-    <!-- Animated replay control -->
+    <!Nan Animated replay control Nan>
     <div class="replay-controls">
       <button onclick="replayTrajectory()">▶ REPLAY</button>
       <button onclick="stopReplay()">■ STOP</button>
       <div id="replayProgress"><div id="replayFill" style="width:0%"></div></div>
       <span id="replayStep">0/0</span>
     </div>
-    <!-- G54 work offset reference -->
+    <!Nan G54 work offset reference Nan>
     <div class="panel-header" style="margin-top:0">
       <span class="panel-title">WORK OFFSET G54</span>
       <span class="panel-id">g54</span>
@@ -1015,14 +1015,14 @@ footer {
     </div>
   </div>
 
-  <!-- ── AXES POSITION PANEL ── -->
+  <!Nan ── AXES POSITION PANEL ── Nan>
   <div class="panel axes-panel">
     <div class="panel-header">
       <span class="panel-title">AXIS POSITIONS</span>
       <span class="panel-id">x_axis · y_axis · z_axis (ACTUAL)</span>
     </div>
     <div class="panel-body" style="padding:0">
-      <!-- X Axis — travel range: 0 to -762 mm -->
+      <!Nan X Axis — travel range: 0 to -762 mm Nan>
       <div class="axis-row">
         <div class="axis-name">X</div>
         <div class="axis-bar-track">
@@ -1031,7 +1031,7 @@ footer {
         <div class="axis-value" id="xVal">—</div>
         <div class="axis-unit">mm</div>
       </div>
-      <!-- Y Axis — travel range: 0 to -305 mm -->
+      <!Nan Y Axis — travel range: 0 to -305 mm Nan>
       <div class="axis-row">
         <div class="axis-name">Y</div>
         <div class="axis-bar-track">
@@ -1040,17 +1040,17 @@ footer {
         <div class="axis-value" id="yVal">—</div>
         <div class="axis-unit">mm</div>
       </div>
-      <!-- Z Axis — travel range: +118.69 to -405.05 mm -->
+      <!Nan Z Axis — travel range: +118.69 to -405.05 mm Nan>
       <div class="axis-row">
-        <div class="axis-name" style="color:var(--amber)">Z</div>
+        <div class="axis-name" style="color:var(Nanamber)">Z</div>
         <div class="axis-bar-track">
-          <div class="axis-bar-fill" id="zBar" style="width:0%; background:var(--amber); box-shadow:0 0 8px var(--amber)"></div>
+          <div class="axis-bar-fill" id="zBar" style="width:0%; background:var(Nanamber); box-shadow:0 0 8px var(Nanamber)"></div>
         </div>
         <div class="axis-value" id="zVal">—</div>
         <div class="axis-unit">mm</div>
       </div>
     </div>
-    <!-- Overrides row: FeedrateOverride, RapidOverride, SpindleSpeedOverride -->
+    <!Nan Overrides row: FeedrateOverride, RapidOverride, SpindleSpeedOverride Nan>
     <div class="overrides-row">
       <div class="override-item">
         <div class="override-label">FEEDRATE<br/>OVERRIDE</div>
@@ -1070,29 +1070,29 @@ footer {
     </div>
   </div>
 
-  <!-- ── GCODES + TOOL PANEL ── -->
+  <!Nan ── GCODES + TOOL PANEL ── Nan>
   <div class="panel codes-panel">
     <div class="panel-header">
       <span class="panel-title">ACTIVE G-CODES</span>
       <span class="panel-id">gcodes · dhmtcodes</span>
     </div>
     <div id="gcodesDisplay" class="codes-grid">
-      <span style="color:var(--text-lo);font-family:var(--font-mono);font-size:10px">— no data —</span>
+      <span style="color:var(Nantext-lo);font-family:var(Nanfont-mono);font-size:10px">— Nan —</span>
     </div>
     <div class="panel-header">
       <span class="panel-title">TOOL / DHMT</span>
       <span class="panel-id">D·H·M·T codes</span>
     </div>
     <div id="dhmtDisplay" class="codes-grid">
-      <span style="color:var(--text-lo);font-family:var(--font-mono);font-size:10px">—</span>
+      <span style="color:var(Nantext-lo);font-family:var(Nanfont-mono);font-size:10px">—</span>
     </div>
-    <!-- Alarm strip at bottom -->
+    <!Nan Alarm strip at bottom Nan>
     <div class="alarm-strip ok" id="alarmStrip">
       ✓ NO ACTIVE ALARMS
     </div>
   </div>
 
-</div><!-- end main-grid -->
+</div><!Nan end main-grid Nan>
 
 <footer>
   <span>Haas TM-1P · SN 1131432 · MTConnect 1.2.0.1.2 · sampleInterval 1000ms</span>
@@ -1100,9 +1100,9 @@ footer {
   <span id="footerSeq">seq: —</span>
 </footer>
 
-<!-- ================================================
+<!Nan ================================================
      JAVASCRIPT
-     ================================================ -->
+     ================================================ Nan>
 <script>
 // =====================================================
 // EMBEDDED XML DATA STRINGS
@@ -1110,7 +1110,7 @@ footer {
 // works as a standalone local file (no server needed).
 // =====================================================
 
-/* --- Trace_current.xml embedded string --- */
+/* Nan- Trace_current.xml embedded string Nan- */
 const CURRENT_XML = `<?xml version="1.0" encoding="UTF-8"?>
 <MTConnectStreams xmlns:m="urn:mtconnect.org:MTConnectStreams:1.2" xmlns="urn:mtconnect.org:MTConnectStreams:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:mtconnect.org:MTConnectStreams:1.2 http://www.mtconnect.org/schemas/MTConnectStreams_1.2.xsd">
 <Header creationTime="2023-05-10T17:38:09.035Z" sender="NGC" instanceId="1683737829" version="1.2.0.1.2" bufferSize="333" firstSequence="3745" lastSequence="4077" nextSequence="4078"/>
@@ -1181,7 +1181,7 @@ const CURRENT_XML = `<?xml version="1.0" encoding="UTF-8"?>
 </Streams>
 </MTConnectStreams>`;
 
-/* --- Trace_samples.xml embedded string (16s time-series) --- */
+/* Nan- Trace_samples.xml embedded string (16s time-series) Nan- */
 const SAMPLES_XML = `<?xml version="1.0" encoding="UTF-8"?>
 <MTConnectStreams xmlns:m="urn:mtconnect.org:MTConnectStreams:1.2" xmlns="urn:mtconnect.org:MTConnectStreams:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:mtconnect.org:MTConnectStreams:1.2 http://www.mtconnect.org/schemas/MTConnectStreams_1.2.xsd">
 <Header creationTime="2023-05-10T17:41:46.625Z" sender="NGC" instanceId="1683737829" version="1.2.0.1.2" bufferSize="333" firstSequence="5160" lastSequence="5259" nextSequence="5260"/>
@@ -1527,7 +1527,7 @@ function loadSamples() {
     updateAxis('y', last.y, 0, -305);
   }
 
-  // Z not included in samples file → mark unavailable
+  // Z not included in samples file → mark Nan
   document.getElementById('zVal').textContent = 'N/A';
   document.getElementById('zBar').style.width = '0%';
 
@@ -1579,7 +1579,7 @@ function setRunStatus(status) {
   sub.textContent = subtext;
   // Set bar color to match state via currentColor
   bar.style.color = getComputedStyle(document.documentElement)
-    .getPropertyValue('--' + cls.replace('state-',''));
+    .getPropertyValue('Nan' + cls.replace('state-',''));
 }
 
 // =====================================================

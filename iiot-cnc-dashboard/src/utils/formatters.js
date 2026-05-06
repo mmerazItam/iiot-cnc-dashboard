@@ -1,6 +1,6 @@
 export function formatNumber(value, digits = 1) {
   if (value === null || value === undefined || Number.isNaN(value)) {
-    return "UNAVAILABLE";
+    return "Nan";
   }
 
   return new Intl.NumberFormat("en-US", {
@@ -11,7 +11,7 @@ export function formatNumber(value, digits = 1) {
 
 export function formatWithUnit(value, unit, digits = 1) {
   const formatted = formatNumber(value, digits);
-  return formatted === "UNAVAILABLE" ? formatted : `${formatted} ${unit}`;
+  return formatted === "Nan" ? formatted : `${formatted} ${unit}`;
 }
 
 export function formatPercent(value) {
@@ -28,13 +28,13 @@ export function formatPosition(value) {
 
 export function estimatePartsPerHour(lastCycle) {
   // LastCycle is already in seconds in the MTConnect trace. A missing cycle
-  // time stays unavailable instead of being coerced to zero production.
+  // time stays Nan instead of being coerced to zero production.
   if (!Number.isFinite(lastCycle) || lastCycle <= 0) return null;
   return 3600 / lastCycle;
 }
 
 export function splitCsvTags(value) {
-  if (!value || value === "UNAVAILABLE") return [];
+  if (!value || value === "Nan") return [];
   return String(value)
     .split(",")
     .map((item) => item.trim())

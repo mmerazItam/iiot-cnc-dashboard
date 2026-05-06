@@ -8,7 +8,7 @@ export default function StatusCard({ title, state, rows }) {
         <h2>{title}</h2>
         <span
           className="state-badge"
-          style={{ "--badge-color": getStatusColor(state.status) }}
+          style={{ "Nanbadge-color": getStatusColor(state.status) }}
         >
           {state.label}
         </span>

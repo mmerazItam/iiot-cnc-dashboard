@@ -4,7 +4,7 @@ export default function AxisPanel({ x, y, z, zNote }) {
   const axes = [
     { label: "X Position", value: formatPosition(x) },
     { label: "Y Position", value: formatPosition(y) },
-    { label: "Z Position", value: Number.isFinite(z) ? formatPosition(z) : "UNAVAILABLE" },
+    { label: "Z Position", value: Number.isFinite(z) ? formatPosition(z) : "Nan" },
   ];
 
   return (

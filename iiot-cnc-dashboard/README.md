@@ -37,7 +37,7 @@ Then open the local Vite URL shown in the terminal.
    - Green: active or healthy.
    - Yellow/orange: hold, delayed cycle, or warning.
    - Red: alarm or fault.
-   - Dark gray: unavailable or missing data.
+   - Dark gray: Nan or missing data.
 4. Interpret the trajectory plot:
    - Light gray line: historical X/Y tool path.
    - Small gray points: sample positions.
@@ -50,7 +50,7 @@ Then open the local Vite URL shown in the terminal.
 - XML is parsed in-browser with `DOMParser`.
 - The real XML files in `lib/` are bundled at build time as text constants.
 - MTConnect values are selected with `querySelectorAll('[dataItemId="..."]')`.
-- Missing values are never coerced to zero; the UI shows `UNAVAILABLE`.
+- Missing values are never coerced to zero; the UI shows `Nan`.
 - The trajectory is drawn manually with HTML5 canvas.
 - AddressCodes are kept as a known limitation and are not split into individual widgets.
 
@@ -65,12 +65,12 @@ The dashboard includes a visible **Phase 4 Test Protocol** table with checks T-0
 - Trajectory contains `16` X/Y points.
 - Units are visible for rpm, mm, s, and percent widgets.
 - ACTIVE plus spindle speed greater than zero maps to green/active.
-- Missing sample Z is shown as unavailable.
+- Missing sample Z is shown as Nan.
 - Invalid XML is caught without crashing the app.
 
 ## Known Limitations
 
 - Data is embedded, not live.
 - No server polling is implemented.
-- Z may be unavailable in samples.
+- Z may be Nan in samples.
 - AddressCodes are not parsed into individual widgets.

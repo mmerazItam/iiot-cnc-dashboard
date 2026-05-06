@@ -101,7 +101,7 @@ export function toNumber(value) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-export function safeValue(value, fallback = "UNAVAILABLE") {
+export function safeValue(value, fallback = "Nan") {
   return value === null || value === undefined || value === "" ? fallback : value;
 }
 

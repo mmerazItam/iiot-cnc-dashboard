@@ -182,7 +182,7 @@ export default function App() {
 
     return labels.map((label, index) => ({
       label,
-      value: values[index] ?? "UNAVAILABLE",
+      value: values[index] ?? "Nan",
     }));
   }, [displayData]);
 
@@ -213,12 +213,12 @@ export default function App() {
 
     const currentZ = isScenarioData(activeData) ? activeData?.zPosition : currentData?.zPosition;
     if (Number.isFinite(currentZ) && !missingScenarioZ) {
-      return `UNAVAILABLE in sample window | Last known from current: ${formatPosition(
+      return `Nan in sample window | Last known from current: ${formatPosition(
         currentZ
       )}`;
     }
 
-    return "UNAVAILABLE in sample window";
+    return "Nan in sample window";
   }, [activeData, sampleData, currentData]);
 
   const scenarioTests = useMemo(() => {
@@ -231,8 +231,8 @@ export default function App() {
       const missingZMatches =
         scenario.id !== "MISSING_Z_SAMPLE" ||
         (scenario.data.missingZInSampleWindow && scenario.data.zPosition === null);
-      const unavailableMatches =
-        scenario.id !== "UNAVAILABLE_STREAM" ||
+      const NanMatches =
+        scenario.id !== "Nan_STREAM" ||
         (scenario.data.spindleSpeed === null && scenario.data.trajectory.length === 0);
 
       return {
@@ -243,7 +243,7 @@ export default function App() {
         criticalBehavior: scenario.expectedWarnings.join(" "),
         actualState: state.status,
         result:
-          stateMatches && cycleMatches && missingZMatches && unavailableMatches
+          stateMatches && cycleMatches && missingZMatches && NanMatches
             ? "Pass"
             : "Fail",
       };
@@ -429,15 +429,15 @@ export default function App() {
         description: "State color",
         input: "Either load",
         expected: "Status widget renders with correct color",
-        actual: displayData ? `${stateCheck.label} / ${stateCheck.status}` : "No data",
+        actual: displayData ? `${stateCheck.label} / ${stateCheck.status}` : "Nan",
         result: displayData && stateCheck.status === "active" ? "Pass" : "Load data required",
       },
       {
         id: "T-08",
         description: "Missing Z sample handling",
         input: "Click Load Samples",
-        expected: "Z position shows UNAVAILABLE in sample window",
-        actual: sampleData ? safeValue(sampleData.latestZ, "UNAVAILABLE") : samplesRequired,
+        expected: "Z position shows Nan in sample window",
+        actual: sampleData ? safeValue(sampleData.latestZ, "Nan") : samplesRequired,
         result: sampleData && sampleData.latestZ === null ? "Pass" : samplesRequired,
       },
       {
@@ -628,7 +628,7 @@ export default function App() {
               label="Estimated Rate"
               value={formatNumber(partsPerHour, 1)}
               unit="parts/hour"
-              status={partsPerHour ? "active" : "unavailable"}
+              status={partsPerHour ? "active" : "Nan"}
             />
           </div>
         </section>
@@ -647,19 +647,19 @@ export default function App() {
               label="FeedrateOverride"
               value={formatNumber(displayData?.feedrateOverride, 0)}
               unit="%"
-              status={displayData?.feedrateOverride === null ? "unavailable" : "ok"}
+              status={displayData?.feedrateOverride === null ? "Nan" : "ok"}
             />
             <MetricCard
               label="SpindleSpeedOverride"
               value={formatNumber(displayData?.spindleSpeedOverride, 0)}
               unit="%"
-              status={displayData?.spindleSpeedOverride === null ? "unavailable" : "ok"}
+              status={displayData?.spindleSpeedOverride === null ? "Nan" : "ok"}
             />
             <MetricCard
               label="RapidOverride"
               value={formatNumber(displayData?.rapidOverride, 0)}
               unit="%"
-              status={displayData?.rapidOverride === null ? "unavailable" : "ok"}
+              status={displayData?.rapidOverride === null ? "Nan" : "ok"}
             />
           </div>
         </section>
@@ -716,7 +716,7 @@ export default function App() {
               <dt>Spindle Max Power</dt>
               <dd>
                 {displayData?.spindleMaxPower === null || displayData?.spindleMaxPower === undefined
-                  ? "UNAVAILABLE"
+                  ? "Nan"
                   : `${formatNumber(displayData.spindleMaxPower, 1)} kW`}
               </dd>
             </div>
