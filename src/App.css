@@ -484,9 +484,9 @@ td {
     grid-template-rows: 124px 104px minmax(258px, 1fr) 156px;
     grid-template-areas:
       "status cycle production gauge"
-      "status process gcodes axis"
+      "status process gcodes coolant"
       "trajectory trajectory detail axis"
-      "test test test coolant";
+      "test test test test";
     min-height: 0;
     overflow: visible;
   }
@@ -679,7 +679,7 @@ td {
 
   .table-wrap {
     height: calc(100% - 24px);
-    overflow: hidden;
+    overflow: auto;
   }
 
   table {
@@ -702,6 +702,10 @@ td {
   th:nth-child(6),
   td:nth-child(6) {
     width: 88px;
+  }
+
+  .test-panel {
+    min-height: 156px;
   }
 }
 
