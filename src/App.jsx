@@ -6,6 +6,7 @@ import MetricCard from "./components/MetricCard.jsx";
 import GaugeCard from "./components/GaugeCard.jsx";
 import TagList from "./components/TagList.jsx";
 import TrajectoryCanvas from "./components/TrajectoryCanvas.jsx";
+import TrajectoryReplay from "./components/TrajectoryReplay.jsx";
 import AxisPanel from "./components/AxisPanel.jsx";
 import TestPanel from "./components/TestPanel.jsx";
 import ScenarioSelector from "./components/ScenarioSelector.jsx";
@@ -84,6 +85,14 @@ export default function App() {
   const [activeData, setActiveData] = useState(null);
   const [lastSource, setLastSource] = useState(null);
   const [error, setError] = useState(null);
+  const [replayIndex, setReplayIndex] = useState(0);
+  const [replayEvents, setReplayEvents] = useState({
+    loadedAtStart: false,
+    steppedForward: false,
+    steppedBackward: false,
+    reset: false,
+    playedToEnd: false,
+  });
 
   const displayData = useMemo(
     () => getDisplayData(activeData, currentData),
@@ -132,6 +141,11 @@ export default function App() {
         ? activeData.trajectory || []
         : [];
 
+  const replayPoint = trajectory[replayIndex] ?? null;
+  const axisX = replayPoint?.x ?? displayData?.xPosition;
+  const axisY = replayPoint?.y ?? displayData?.yPosition;
+  const axisZ = displayData?.zPosition;
+
   const zNote = useMemo(() => {
     const missingScenarioZ =
       activeData?.source === "scenario" && activeData?.missingZInSampleWindow;
@@ -177,6 +191,49 @@ export default function App() {
       };
     });
   }, []);
+
+  const replayTests = useMemo(() => {
+    const hasTrajectory = trajectory.length > 0;
+    const finalIndex = Math.max(trajectory.length - 1, 0);
+
+    return [
+      {
+        id: "T-10",
+        description: "Replay starts at step 1",
+        expected: "Replay index starts at 0 / Step 1",
+        actual: hasTrajectory ? `Step ${replayIndex + 1} / ${trajectory.length}` : "Load Samples required",
+        result: replayEvents.loadedAtStart ? "Pass" : hasTrajectory ? "Pending" : "Load Samples required",
+      },
+      {
+        id: "T-11",
+        description: "Step Forward increments currentIndex",
+        expected: "currentIndex increases by one without exceeding bounds",
+        actual: hasTrajectory ? `currentIndex ${replayIndex}` : "Load Samples required",
+        result: replayEvents.steppedForward ? "Pass" : hasTrajectory ? "Pending" : "Load Samples required",
+      },
+      {
+        id: "T-12",
+        description: "Step Backward decrements currentIndex",
+        expected: "currentIndex decreases by one without going below zero",
+        actual: hasTrajectory ? `currentIndex ${replayIndex}` : "Load Samples required",
+        result: replayEvents.steppedBackward ? "Pass" : hasTrajectory ? "Pending" : "Load Samples required",
+      },
+      {
+        id: "T-13",
+        description: "Reset returns to index 0",
+        expected: "Replay returns to Step 1",
+        actual: hasTrajectory ? `currentIndex ${replayIndex}` : "Load Samples required",
+        result: replayEvents.reset && replayIndex === 0 ? "Pass" : hasTrajectory ? "Pending" : "Load Samples required",
+      },
+      {
+        id: "T-14",
+        description: "Play reaches final point without exceeding array bounds",
+        expected: `Final currentIndex is ${finalIndex}`,
+        actual: hasTrajectory ? `currentIndex ${replayIndex}` : "Load Samples required",
+        result: replayEvents.playedToEnd && replayIndex === finalIndex ? "Pass" : hasTrajectory ? "Pending" : "Load Samples required",
+      },
+    ];
+  }, [replayEvents, replayIndex, trajectory.length]);
 
   const tests = useMemo(() => {
     const invalidResult = parseCurrentXml(INVALID_XML);
@@ -281,6 +338,7 @@ export default function App() {
     setCurrentData(parsed);
     setActiveData(parsed);
     setLastSource("current");
+    setReplayIndex(0);
     setError(null);
   }
 
@@ -295,6 +353,14 @@ export default function App() {
     setSampleData(parsed);
     setActiveData(parsed);
     setLastSource("samples");
+    setReplayIndex(0);
+    setReplayEvents({
+      loadedAtStart: true,
+      steppedForward: false,
+      steppedBackward: false,
+      reset: false,
+      playedToEnd: false,
+    });
     setError(null);
   }
 
@@ -307,7 +373,29 @@ export default function App() {
 
     setActiveData(scenario.data);
     setLastSource(`scenario:${scenario.id}`);
+    setReplayIndex(0);
+    setReplayEvents({
+      loadedAtStart: scenario.data.trajectory.length > 0,
+      steppedForward: false,
+      steppedBackward: false,
+      reset: false,
+      playedToEnd: false,
+    });
     setError(null);
+  }
+
+  function handleReplayStepChange(nextIndex, action) {
+    // replayIndex is the single source of truth for both the canvas highlight
+    // and the optional X/Y axis override during simulated motion.
+    setReplayIndex(nextIndex);
+
+    setReplayEvents((previous) => ({
+      ...previous,
+      steppedForward: previous.steppedForward || action === "step-forward",
+      steppedBackward: previous.steppedBackward || action === "step-backward",
+      reset: previous.reset || action === "reset",
+      playedToEnd: previous.playedToEnd || action === "play-complete",
+    }));
   }
 
   function handleReset() {
@@ -315,6 +403,14 @@ export default function App() {
     setSampleData(null);
     setActiveData(null);
     setLastSource(null);
+    setReplayIndex(0);
+    setReplayEvents({
+      loadedAtStart: false,
+      steppedForward: false,
+      steppedBackward: false,
+      reset: false,
+      playedToEnd: false,
+    });
     setError(null);
   }
 
@@ -436,11 +532,23 @@ export default function App() {
           <TagList title="Active Gcodes" tags={gcodeTags} />
         </div>
 
-        <TrajectoryCanvas trajectory={trajectory} />
+        <div className="trajectory-workspace">
+          <TrajectoryCanvas
+            trajectory={trajectory}
+            currentIndex={replayIndex}
+            showFullPath
+          />
+          <TrajectoryReplay
+            trajectory={trajectory}
+            currentIndex={replayIndex}
+            currentGcode={gcodeTags[0]}
+            onStepChange={handleReplayStepChange}
+          />
+        </div>
         <AxisPanel
-          x={displayData?.xPosition}
-          y={displayData?.yPosition}
-          z={displayData?.zPosition}
+          x={axisX}
+          y={axisY}
+          z={axisZ}
           zNote={zNote}
         />
 
@@ -501,7 +609,7 @@ export default function App() {
         <div className="coolant-panel">
           <TagList title="Coolant States" tags={coolantTags} />
         </div>
-        <TestPanel tests={tests} scenarioTests={scenarioTests} />
+        <TestPanel tests={tests} scenarioTests={scenarioTests} replayTests={replayTests} />
       </section>
     </main>
   );

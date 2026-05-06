@@ -381,6 +381,86 @@ h2 {
   margin: 0 auto;
 }
 
+.trajectory-workspace {
+  display: grid;
+  gap: 12px;
+}
+
+.replay-card {
+  display: grid;
+  gap: 10px;
+}
+
+.replay-controls {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+}
+
+.replay-controls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+  transform: none;
+}
+
+.speed-select {
+  align-items: center;
+  color: #9fb0c7;
+  display: flex;
+  font-size: 0.82rem;
+  font-weight: 800;
+  gap: 8px;
+}
+
+.speed-select select {
+  background: #0b1220;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  color: #f8fafc;
+  min-height: 36px;
+  padding: 0 0.65rem;
+}
+
+.replay-readout {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  margin: 0;
+}
+
+.replay-readout div {
+  background: rgba(8, 17, 31, 0.62);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.replay-readout dt {
+  color: #9fb0c7;
+  font-size: 0.72rem;
+}
+
+.replay-readout dd {
+  color: #f8fafc;
+  font-weight: 800;
+  margin: 0.2rem 0 0;
+  overflow-wrap: anywhere;
+}
+
+.replay-progress {
+  background: #111827;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 999px;
+  height: 9px;
+  overflow: hidden;
+}
+
+.replay-progress div {
+  background: #22d3ee;
+  height: 100%;
+  transition: width 0.18s ease;
+}
+
 .axis-grid {
   display: grid;
   gap: 12px;
@@ -449,6 +529,7 @@ td {
 }
 
 .test-result.manual,
+.test-result.pending,
 .test-result.load-current-required,
 .test-result.load-samples-required,
 .test-result.load-data-required {
@@ -514,7 +595,7 @@ td {
     display: grid;
     gap: 8px;
     grid-template-columns: 1.02fr 1.08fr 1.24fr 0.92fr;
-    grid-template-rows: 124px 104px minmax(258px, 1fr) 460px;
+    grid-template-rows: 124px 104px minmax(300px, 1fr) 650px;
     grid-template-areas:
       "status cycle production gauge"
       "status process gcodes coolant"
@@ -549,9 +630,17 @@ td {
     min-height: 0;
   }
 
-  .trajectory-card {
+  .trajectory-workspace {
     display: grid;
+    gap: 8px;
     grid-area: trajectory;
+    grid-template-columns: 320px minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  .trajectory-workspace .trajectory-card {
+    display: grid;
+    grid-area: auto;
     grid-template-rows: auto minmax(0, 1fr);
     min-height: 0;
   }
@@ -700,6 +789,49 @@ td {
     width: min(100%, 300px) !important;
   }
 
+  .replay-card {
+    gap: 7px;
+  }
+
+  .replay-controls {
+    gap: 5px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .replay-controls button {
+    font-size: 0.64rem;
+    min-height: 30px;
+    padding: 0.3rem 0.4rem;
+  }
+
+  .speed-select,
+  .replay-readout dt {
+    font-size: 0.64rem;
+  }
+
+  .speed-select select {
+    border-radius: 6px;
+    font-size: 0.68rem;
+    min-height: 30px;
+  }
+
+  .replay-readout {
+    gap: 5px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .replay-readout div {
+    padding: 5px;
+  }
+
+  .replay-readout dd {
+    font-size: 0.66rem;
+  }
+
+  .replay-progress {
+    height: 7px;
+  }
+
   .axis-grid {
     gap: 6px;
     grid-template-rows: repeat(3, minmax(0, 1fr));
@@ -788,6 +920,12 @@ td {
     padding-top: 7px;
   }
 
+  .simulated-motion-block {
+    border-top: 1px solid rgba(148, 163, 184, 0.14);
+    margin-top: 8px;
+    padding-top: 7px;
+  }
+
   .scenario-tests-heading {
     margin-bottom: 5px;
   }
@@ -796,9 +934,18 @@ td {
     max-height: 190px;
   }
 
+  .replay-table-wrap {
+    max-height: 150px;
+  }
+
   .scenario-tests-table th,
   .scenario-tests-table td {
     width: calc(100% / 6);
+  }
+
+  .replay-tests-table th,
+  .replay-tests-table td {
+    width: 20%;
   }
 
   table {
@@ -831,7 +978,7 @@ td {
   }
 
   .test-panel {
-    min-height: 460px;
+    min-height: 650px;
   }
 }
 
@@ -885,6 +1032,10 @@ td {
   }
 
   .scenario-selector {
+    grid-template-columns: 1fr;
+  }
+
+  .trajectory-workspace {
     grid-template-columns: 1fr;
   }
 }
