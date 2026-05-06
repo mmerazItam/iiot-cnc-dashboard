@@ -1,4 +1,4 @@
-export default function TestPanel({ tests }) {
+export default function TestPanel({ tests, scenarioTests = [] }) {
   return (
     <section className="card test-panel">
       <div className="card-heading">
@@ -34,6 +34,46 @@ export default function TestPanel({ tests }) {
             ))}
           </tbody>
         </table>
+      </div>
+      <div className="scenario-tests-block">
+        <div className="card-heading scenario-tests-heading">
+          <h2>Synthetic Scenario Tests</h2>
+          <span>{scenarioTests.length} scenarios</span>
+        </div>
+        <div className="table-wrap scenario-table-wrap">
+          <table className="scenario-tests-table">
+            <thead>
+              <tr>
+                <th>Scenario name</th>
+                <th>Expected state</th>
+                <th>Expected color</th>
+                <th>Critical expected behavior</th>
+                <th>Actual state</th>
+                <th>Pass/Fail</th>
+              </tr>
+            </thead>
+            <tbody>
+              {scenarioTests.map((scenario) => (
+                <tr key={scenario.id}>
+                  <td>{scenario.name}</td>
+                  <td>{scenario.expectedState}</td>
+                  <td>{scenario.expectedColor}</td>
+                  <td>{scenario.criticalBehavior}</td>
+                  <td>{scenario.actualState}</td>
+                  <td>
+                    <span
+                      className={`test-result ${scenario.result
+                        .toLowerCase()
+                        .replaceAll(" ", "-")}`}
+                    >
+                      {scenario.result}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </section>
   );

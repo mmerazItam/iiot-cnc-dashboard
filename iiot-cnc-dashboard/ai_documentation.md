@@ -791,3 +791,209 @@ Important:
 The app must work even if the XML constants only contain the relevant snippets needed for the dashboard. However, structure the parser so it would also work with the full original MTConnect XML files pasted into the constants.
 
 Build a polished, functional dashboard that satisfies the Phase 3 dashboard specification and Phase 4 implementation/testing requirements."
+
+## Prompt 5
+Modelo: Codex
+Prompt: 
+"Actúa como desarrollador frontend senior especializado en React JS, testing de dashboards industriales e integración de datos MTConnect.
+
+Estoy trabajando en una aplicación React JS para un dashboard IIoT de una máquina CNC Haas TM-1P. La app ya parsea XML MTConnect usando DOMParser y actualiza widgets como:
+
+- RunStatus
+- MachineCondition
+- ActiveAlarms
+- EmergencyStop
+- Availability
+- SpindleSpeed
+- FeedrateOverride
+- SpindleSpeedOverride
+- ThisCycle
+- LastCycle
+- M30Counter1
+- M30Counter2
+- X/Y/Z Position
+- Gcodes
+- Trajectory Canvas
+
+Necesito que generes datos sample sintéticos para probar diferentes estados del dashboard. Estos datos pertenecen a una fase de validación/testing del proyecto.
+
+Objetivo:
+Crear un archivo llamado:
+
+src/data/testScenarios.js
+
+que exporte varios escenarios de prueba como objetos JavaScript y, si es útil, también como XML strings MTConnect simplificados.
+
+Cada escenario debe representar un estado diferente de la máquina y debe servir para probar la lógica de colores, alarmas, widgets y manejo de datos faltantes.
+
+Genera al menos estos escenarios:
+
+1. ACTIVE_NORMAL
+   - Availability = AVAILABLE
+   - RunStatus = ACTIVE
+   - MachineCondition = Normal
+   - ActiveAlarms = NO ACTIVE ALARMS
+   - EmergencyStop = ARMED
+   - SpindleSpeed ≈ 2000 rpm
+   - FeedrateOverride = 100 %
+   - SpindleSpeedOverride = 100 %
+   - ThisCycle = 390 s
+   - LastCycle = 395 s
+   - M30Counter1 = 5536
+   - M30Counter2 = 5536
+   - X/Y trajectory with 16 points forming a smooth oval or contour
+   - Expected dashboard state: green / active
+
+2. IDLE_READY
+   - Availability = AVAILABLE
+   - RunStatus = READY
+   - MachineCondition = Normal
+   - ActiveAlarms = NO ACTIVE ALARMS
+   - EmergencyStop = ARMED
+   - SpindleSpeed = 0 rpm
+   - FeedrateOverride = 100 %
+   - ThisCycle = 0 s
+   - LastCycle = 395 s
+   - M30Counter1 = 5536
+   - No axis movement
+   - Expected dashboard state: gray / idle
+
+3. FEED_HOLD
+   - Availability = AVAILABLE
+   - RunStatus = FEED_HOLD
+   - MachineCondition = Normal or Warning
+   - ActiveAlarms = NO ACTIVE ALARMS
+   - EmergencyStop = ARMED
+   - SpindleSpeed ≈ 2000 rpm or reduced
+   - FeedrateOverride = 0 %
+   - ThisCycle = 420 s
+   - LastCycle = 395 s
+   - X/Y positions fixed or minimally changing
+   - Expected dashboard state: yellow / hold
+
+4. ALARM_ACTIVE
+   - Availability = AVAILABLE
+   - RunStatus = STOPPED or INTERRUPTED
+   - MachineCondition = Fault
+   - ActiveAlarms = "102 SERVO OVERLOAD" or another CNC-style alarm
+   - EmergencyStop = ARMED
+   - SpindleSpeed = 0 rpm
+   - FeedrateOverride = 0 %
+   - ThisCycle = 128 s
+   - LastCycle = 395 s
+   - Expected dashboard state: red / alarm
+
+5. EMERGENCY_STOP
+   - Availability = AVAILABLE
+   - RunStatus = STOPPED
+   - MachineCondition = Fault
+   - ActiveAlarms = "EMERGENCY STOP ACTIVE"
+   - EmergencyStop = TRIGGERED
+   - SpindleSpeed = 0 rpm
+   - FeedrateOverride = 0 %
+   - Axis positions frozen
+   - Expected dashboard state: red / emergency stop
+
+6. UNAVAILABLE_STREAM
+   - Availability = UNAVAILABLE
+   - RunStatus = UNAVAILABLE
+   - MachineCondition = UNAVAILABLE
+   - ActiveAlarms = UNAVAILABLE
+   - EmergencyStop = UNAVAILABLE
+   - SpindleSpeed = null
+   - No trajectory
+   - Expected dashboard state: dark gray / unavailable
+
+7. SLOW_CYCLE_WARNING
+   - Availability = AVAILABLE
+   - RunStatus = ACTIVE
+   - MachineCondition = Normal
+   - ActiveAlarms = NO ACTIVE ALARMS
+   - EmergencyStop = ARMED
+   - SpindleSpeed ≈ 2000 rpm
+   - ThisCycle = 455 s
+   - LastCycle = 395 s
+   - ThisCycle > LastCycle * 1.1
+   - Expected dashboard state: active but cycle warning orange/yellow
+
+8. MISSING_Z_SAMPLE
+   - Availability = AVAILABLE
+   - RunStatus = ACTIVE
+   - MachineCondition = Normal
+   - ActiveAlarms = NO ACTIVE ALARMS
+   - SpindleSpeed ≈ 2000 rpm
+   - Include X/Y samples
+   - Do not include Z sample
+   - Expected behavior: Z Position displays "UNAVAILABLE in sample window", not 0
+
+For each scenario, include:
+
+- id
+- title
+- description
+- expectedState
+- expectedColor
+- expectedWarnings
+- data object ready to feed the dashboard state directly
+- optional xml string that mimics MTConnectStreams with relevant dataItemId attributes
+
+Use dataItemId names compatible with my parser:
+- avail
+- mcond
+- aalarms
+- rstat
+- estop
+- fdovrd
+- ssovrd
+- sspeed
+- tcycle
+- lcycle
+- m30c1
+- m30c2
+- x_axis_actual_position
+- y_axis_actual_position
+- z_axis_actual_position
+- gcodes
+- spindletime
+- machineruntime
+
+Also create a helper function:
+
+export function getScenarioById(id)
+
+Also create:
+
+export const scenarioOptions = testScenarios.map(...)
+
+Also create an optional component:
+
+ScenarioSelector.jsx
+
+Requirements for ScenarioSelector:
+- Dropdown with scenario names
+- Button "Load Test Scenario"
+- Calls onLoadScenario(selectedScenario)
+- Works with the dashboard state object
+
+Update TestPanel.jsx if needed to include a section called "Synthetic Scenario Tests" that lists:
+- Scenario name
+- Expected state
+- Expected color
+- Critical expected behavior
+- Pass/Fail based on alarmLogic result
+
+Do not break the existing Load Current Snapshot and Load Samples buttons. Synthetic scenarios should be additional test inputs, not replacements.
+
+Generate complete code for:
+1. src/data/testScenarios.js
+2. src/components/ScenarioSelector.jsx
+3. Any minimal changes needed in App.jsx
+4. Any minimal changes needed in TestPanel.jsx
+5. Any minimal CSS needed
+
+Important:
+- Missing numeric values should be null, not 0.
+- Missing string values should be "UNAVAILABLE".
+- Do not assume missing Z is 0.
+- Keep all units visible in the dashboard.
+- Keep the UI text in English."
