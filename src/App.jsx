@@ -27,10 +27,36 @@ import {
 } from "./utils/formatters.js";
 import { parseCurrentXml, parseSamplesXml, safeValue } from "./utils/xmlParsers.js";
 
-function getDisplayData(activeData, currentData) {
+function getNearestSeriesValue(series = [], timestamp, index) {
+  if (!series.length) return null;
+
+  if (!timestamp) {
+    return series[Math.min(index, series.length - 1)]?.value ?? null;
+  }
+
+  const targetTime = Date.parse(timestamp);
+  if (!Number.isFinite(targetTime)) {
+    return series[Math.min(index, series.length - 1)]?.value ?? null;
+  }
+
+  // MTConnect samples for position and cycle time can have slightly different
+  // timestamps. The replay links Cycle Status to the nearest telemetry sample
+  // instead of assuming array indexes always line up perfectly.
+  return series.reduce((nearest, item) => {
+    const itemTime = Date.parse(item.timestamp);
+    if (!Number.isFinite(itemTime)) return nearest;
+
+    const distance = Math.abs(itemTime - targetTime);
+    return distance < nearest.distance ? { value: item.value, distance } : nearest;
+  }, { value: null, distance: Number.POSITIVE_INFINITY }).value;
+}
+
+function getDisplayData(activeData, currentData, replayIndex = 0) {
   if (!activeData) return null;
 
   if (activeData.source === "current" || activeData.source === "scenario") {
+    const replayPoint = activeData.trajectory?.[replayIndex];
+
     return {
       ...activeData,
       spindleSpeed: activeData.spindleSpeed,
@@ -39,15 +65,27 @@ function getDisplayData(activeData, currentData) {
       machineRunTime: activeData.machineRunTime,
       spindleTime: activeData.spindleTime,
       gcodes: activeData.gcodes,
-      xPosition: activeData.xPosition,
-      yPosition: activeData.yPosition,
+      xPosition: replayPoint?.x ?? activeData.xPosition,
+      yPosition: replayPoint?.y ?? activeData.yPosition,
       zPosition: activeData.zPosition,
     };
   }
 
+  const replayPoint = activeData.trajectory?.[replayIndex];
+  const replayThisCycle = getNearestSeriesValue(
+    activeData.thisCycleSeries,
+    replayPoint?.timestamp,
+    replayIndex
+  );
+  const replaySpindleSpeed = getNearestSeriesValue(
+    activeData.spindleSpeedSeries,
+    replayPoint?.timestamp,
+    replayIndex
+  );
+
   // Samples contain high-frequency process values but not every status field.
   // The dashboard overlays latest sample values on the last current snapshot,
-  // matching a common IIoT UI pattern: latest telemetry plus last known state.
+  // matching a common IIoT UI pattern: replay telemetry plus last known state.
   return {
     ...currentData,
     ...activeData,
@@ -59,16 +97,16 @@ function getDisplayData(activeData, currentData) {
       currentData?.runStatus ?? (activeData.latestSpindleSpeed > 0 ? "ACTIVE" : null),
     mode: currentData?.mode ?? null,
     program: currentData?.program ?? null,
-    spindleSpeed: activeData.latestSpindleSpeed,
-    thisCycle: activeData.latestThisCycle,
+    spindleSpeed: replaySpindleSpeed ?? activeData.latestSpindleSpeed,
+    thisCycle: replayThisCycle ?? activeData.latestThisCycle,
     lastCycle: currentData?.lastCycle ?? null,
     m30Counter1: activeData.latestM30Counter1,
     m30Counter2: activeData.latestM30Counter2,
     machineRunTime: activeData.latestMachineRunTime,
     spindleTime: activeData.latestSpindleTime,
     gcodes: activeData.latestGcodes,
-    xPosition: activeData.latestX,
-    yPosition: activeData.latestY,
+    xPosition: replayPoint?.x ?? activeData.latestX,
+    yPosition: replayPoint?.y ?? activeData.latestY,
     zPosition: activeData.latestZ,
     feedrateOverride: currentData?.feedrateOverride ?? null,
     spindleSpeedOverride: currentData?.spindleSpeedOverride ?? null,
@@ -95,8 +133,8 @@ export default function App() {
   });
 
   const displayData = useMemo(
-    () => getDisplayData(activeData, currentData),
-    [activeData, currentData]
+    () => getDisplayData(activeData, currentData, replayIndex),
+    [activeData, currentData, replayIndex]
   );
 
   const machineState = useMemo(() => getMachineState(displayData), [displayData]);
@@ -470,6 +508,12 @@ export default function App() {
               />
             </div>
           </div>
+          {trajectory.length > 0 ? (
+            <div className="cycle-replay-link">
+              Linked to replay step {replayIndex + 1} / {trajectory.length}
+              {replayPoint?.timestamp ? ` | ${replayPoint.timestamp}` : ""}
+            </div>
+          ) : null}
         </section>
 
         <section className="card production-card">

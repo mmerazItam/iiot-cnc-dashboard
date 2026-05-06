@@ -294,6 +294,13 @@ h2 {
   margin-top: 18px;
 }
 
+.cycle-replay-link {
+  color: #9fb0c7;
+  font-size: 0.78rem;
+  margin-top: 0.7rem;
+  overflow-wrap: anywhere;
+}
+
 .progress-meta {
   color: #b6c5d8;
   display: flex;
@@ -749,6 +756,11 @@ td {
   .progress-meta {
     font-size: 0.68rem;
     margin-bottom: 4px;
+  }
+
+  .cycle-replay-link {
+    font-size: 0.62rem;
+    margin-top: 0.4rem;
   }
 
   .progress-track {
