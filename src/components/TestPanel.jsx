@@ -41,7 +41,7 @@ export default function TestPanel({ tests, scenarioTests = [] }) {
           <span>{scenarioTests.length} scenarios</span>
         </div>
         <div className="table-wrap scenario-table-wrap">
-          <table>
+          <table className="scenario-tests-table">
             <thead>
               <tr>
                 <th>Scenario name</th>
