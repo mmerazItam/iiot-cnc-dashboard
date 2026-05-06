@@ -514,7 +514,7 @@ td {
     display: grid;
     gap: 8px;
     grid-template-columns: 1.02fr 1.08fr 1.24fr 0.92fr;
-    grid-template-rows: 124px 104px minmax(258px, 1fr) 300px;
+    grid-template-rows: 124px 104px minmax(258px, 1fr) 460px;
     grid-template-areas:
       "status cycle production gauge"
       "status process gcodes coolant"
@@ -778,7 +778,7 @@ td {
   }
 
   .table-wrap {
-    max-height: 116px;
+    max-height: 180px;
     overflow: auto;
   }
 
@@ -793,7 +793,7 @@ td {
   }
 
   .scenario-table-wrap {
-    max-height: 122px;
+    max-height: 190px;
   }
 
   table {
@@ -819,7 +819,7 @@ td {
   }
 
   .test-panel {
-    min-height: 300px;
+    min-height: 460px;
   }
 }
 
