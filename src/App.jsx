@@ -264,7 +264,7 @@ export default function App() {
 
       {error ? <div className="error-banner">XML parse error: {error}</div> : null}
 
-      <section className="dashboard-grid top-grid">
+      <section className="single-view-grid">
         <StatusCard
           title="Machine Status"
           state={machineState}
@@ -277,7 +277,7 @@ export default function App() {
           ]}
         />
 
-        <section className="card">
+        <section className="card cycle-card">
           <div className="card-heading">
             <h2>Cycle Status</h2>
             <span className={`cycle-label ${cycleStatus.status}`}>{cycleStatus.label}</span>
@@ -310,7 +310,7 @@ export default function App() {
           </div>
         </section>
 
-        <section className="card">
+        <section className="card production-card">
           <div className="card-heading">
             <h2>Production</h2>
           </div>
@@ -335,9 +335,7 @@ export default function App() {
             />
           </div>
         </section>
-      </section>
 
-      <section className="dashboard-grid middle-grid">
         <GaugeCard
           label="SpindleSpeed"
           value={displayData?.spindleSpeed}
@@ -368,10 +366,10 @@ export default function App() {
             />
           </div>
         </section>
-        <TagList title="Active Gcodes" tags={gcodeTags} />
-      </section>
+        <div className="gcodes-panel">
+          <TagList title="Active Gcodes" tags={gcodeTags} />
+        </div>
 
-      <section className="dashboard-grid bottom-grid">
         <TrajectoryCanvas trajectory={trajectory} />
         <AxisPanel
           x={displayData?.xPosition}
@@ -379,9 +377,7 @@ export default function App() {
           z={displayData?.zPosition}
           zNote={zNote}
         />
-      </section>
 
-      <section className="dashboard-grid detail-grid">
         <section className="card detail-card">
           <div className="card-heading">
             <h2>Machine Details</h2>
@@ -429,10 +425,11 @@ export default function App() {
             </div>
           </dl>
         </section>
-        <TagList title="Coolant States" tags={coolantTags} />
+        <div className="coolant-panel">
+          <TagList title="Coolant States" tags={coolantTags} />
+        </div>
+        <TestPanel tests={tests} />
       </section>
-
-      <TestPanel tests={tests} />
     </main>
   );
 }

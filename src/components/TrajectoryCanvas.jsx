@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 const X_RANGE = [-500, -300];
 const Y_RANGE = [-200, -50];
 
-export default function TrajectoryCanvas({ trajectory, width = 520, height = 340 }) {
+export default function TrajectoryCanvas({ trajectory, width = 520, height = 240 }) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
