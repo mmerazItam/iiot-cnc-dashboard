@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 const X_RANGE = [-500, -300];
 const Y_RANGE = [-200, -50];
 
-export default function TrajectoryCanvas({ trajectory, width = 520, height = 240 }) {
+export default function TrajectoryCanvas({ trajectory, width = 300, height = 300 }) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -23,23 +23,42 @@ export default function TrajectoryCanvas({ trajectory, width = 520, height = 240
 
     ctx.fillStyle = "#08111f";
     ctx.fillRect(0, 0, width, height);
+    const plotSize = Math.min(width, height) - margin * 2;
+    const plotLeft = (width - plotSize) / 2;
+    const plotTop = (height - plotSize) / 2;
+    const plotBottom = plotTop + plotSize;
+    const plotRight = plotLeft + plotSize;
+
     ctx.strokeStyle = "#263244";
     ctx.lineWidth = 1;
-    ctx.strokeRect(margin, margin, width - margin * 2, height - margin * 2);
+    ctx.strokeRect(plotLeft, plotTop, plotSize, plotSize);
+
+    // Draw a square reference grid so the trajectory reads like an industrial
+    // position plot instead of a free-floating line chart.
+    ctx.strokeStyle = "#1c2a3b";
+    for (let index = 1; index < 5; index += 1) {
+      const step = (plotSize / 5) * index;
+      ctx.beginPath();
+      ctx.moveTo(plotLeft + step, plotTop);
+      ctx.lineTo(plotLeft + step, plotBottom);
+      ctx.moveTo(plotLeft, plotTop + step);
+      ctx.lineTo(plotRight, plotTop + step);
+      ctx.stroke();
+    }
 
     ctx.fillStyle = "#93a4bb";
     ctx.font = "12px Inter, system-ui, sans-serif";
-    ctx.fillText("X Position (mm)", width / 2 - 42, height - 6);
+    ctx.fillText("X Position (mm)", width / 2 - 42, height - 5);
     ctx.save();
-    ctx.translate(12, height / 2 + 42);
+    ctx.translate(11, height / 2 + 42);
     ctx.rotate(-Math.PI / 2);
     ctx.fillText("Y Position (mm)", 0, 0);
     ctx.restore();
 
-    ctx.fillText(`${X_RANGE[0]} mm`, margin, height - margin + 16);
-    ctx.fillText(`${X_RANGE[1]} mm`, width - margin - 54, height - margin + 16);
-    ctx.fillText(`${Y_RANGE[1]} mm`, margin + 4, margin + 14);
-    ctx.fillText(`${Y_RANGE[0]} mm`, margin + 4, height - margin - 8);
+    ctx.fillText(`${X_RANGE[0]} mm`, plotLeft, plotBottom + 14);
+    ctx.fillText(`${X_RANGE[1]} mm`, plotRight - 54, plotBottom + 14);
+    ctx.fillText(`${Y_RANGE[1]} mm`, plotLeft + 4, plotTop + 14);
+    ctx.fillText(`${Y_RANGE[0]} mm`, plotLeft + 4, plotBottom - 8);
 
     const points = (trajectory || []).filter(
       (point) => Number.isFinite(point.x) && Number.isFinite(point.y)
@@ -53,13 +72,13 @@ export default function TrajectoryCanvas({ trajectory, width = 520, height = 240
     }
 
     const mapX = (x) =>
-      margin + ((x - X_RANGE[0]) / (X_RANGE[1] - X_RANGE[0])) * (width - margin * 2);
+      plotLeft + ((x - X_RANGE[0]) / (X_RANGE[1] - X_RANGE[0])) * plotSize;
 
     const mapY = (y) => {
       // CNC coordinates are in millimeters. The canvas origin is top-left, so
       // Y is inverted to make larger machine Y values appear higher on screen.
       const normalized = (y - Y_RANGE[0]) / (Y_RANGE[1] - Y_RANGE[0]);
-      return height - margin - normalized * (height - margin * 2);
+      return plotBottom - normalized * plotSize;
     };
 
     ctx.beginPath();
@@ -101,7 +120,7 @@ export default function TrajectoryCanvas({ trajectory, width = 520, height = 240
       </div>
       <canvas
         ref={canvasRef}
-        style={{ width: "100%", maxWidth: `${width}px`, height: "auto" }}
+        style={{ width: "100%", maxWidth: `${width}px`, aspectRatio: "1 / 1" }}
         aria-label="X and Y CNC trajectory plot"
       />
     </section>
