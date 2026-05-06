@@ -1,0 +1,2019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Haas TM-1P · IIoT Production Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+<style>
+/* ===================================================
+   CSS CUSTOM PROPERTIES — color system & typography
+   =================================================== */
+:root {
+  --bg-deep:    #07090b;
+  --bg-panel:   #0e1117;
+  --bg-card:    #141820;
+  --bg-highlight:#1c2230;
+  --border:     #1f2a3a;
+  --border-glow:#2a3a52;
+
+  --amber:      #ffb300;
+  --amber-dim:  #7a5500;
+  --green:      #00e676;
+  --green-dim:  #004d26;
+  --cyan:       #00bcd4;
+  --cyan-dim:   #004d5a;
+  --red:        #f44336;
+  --red-dim:    #5a0800;
+  --yellow:     #ffee58;
+  --yellow-dim: #5a5000;
+  --gray:       #546e7a;
+  --gray-dim:   #1a2530;
+  --text-hi:    #e8eaf0;
+  --text-mid:   #7a8a9a;
+  --text-lo:    #3a4a5a;
+
+  --font-mono:  'Share Tech Mono', monospace;
+  --font-ui:    'Barlow Condensed', sans-serif;
+}
+
+/* ===================================================
+   RESET & BASE
+   =================================================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; }
+body {
+  background: var(--bg-deep);
+  color: var(--text-hi);
+  font-family: var(--font-ui);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ===================================================
+   SCANLINE OVERLAY — subtle CRT texture
+   =================================================== */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 9999;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 2px,
+    rgba(0,0,0,0.08) 2px,
+    rgba(0,0,0,0.08) 4px
+  );
+}
+
+/* ===================================================
+   HEADER
+   =================================================== */
+header {
+  background: var(--bg-panel);
+  border-bottom: 2px solid var(--amber);
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 4px 24px rgba(255,179,0,0.1);
+}
+.header-left {
+  display: flex; align-items: center; gap: 16px;
+}
+.machine-badge {
+  background: var(--amber);
+  color: #000;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: bold;
+  padding: 4px 10px;
+  letter-spacing: 2px;
+  clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+}
+.header-title {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  color: var(--text-hi);
+  letter-spacing: 3px;
+}
+.header-title span { color: var(--amber); }
+.header-sub {
+  font-size: 11px;
+  color: var(--text-mid);
+  letter-spacing: 2px;
+  font-family: var(--font-mono);
+}
+.header-right {
+  display: flex; align-items: center; gap: 12px;
+}
+#clock {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  color: var(--cyan);
+  letter-spacing: 2px;
+}
+.data-source-label {
+  font-size: 10px;
+  color: var(--text-mid);
+  font-family: var(--font-mono);
+  letter-spacing: 1px;
+}
+#data-source-tag {
+  font-size: 11px;
+  color: var(--amber);
+  font-family: var(--font-mono);
+  padding: 2px 8px;
+  border: 1px solid var(--amber-dim);
+  background: rgba(255,179,0,0.05);
+}
+
+/* ===================================================
+   CONTROL BAR — load buttons
+   =================================================== */
+.control-bar {
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.control-bar label {
+  font-size: 11px;
+  color: var(--text-mid);
+  font-family: var(--font-mono);
+  letter-spacing: 1px;
+  margin-right: 4px;
+}
+.btn {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 1px;
+  padding: 7px 18px;
+  border: 1px solid;
+  cursor: pointer;
+  transition: all 0.15s;
+  clip-path: polygon(4px 0%, 100% 0%, calc(100% - 4px) 100%, 0% 100%);
+  background: transparent;
+}
+.btn-current {
+  color: var(--cyan);
+  border-color: var(--cyan-dim);
+}
+.btn-current:hover {
+  background: rgba(0,188,212,0.12);
+  border-color: var(--cyan);
+  box-shadow: 0 0 12px rgba(0,188,212,0.3);
+}
+.btn-samples {
+  color: var(--amber);
+  border-color: var(--amber-dim);
+}
+.btn-samples:hover {
+  background: rgba(255,179,0,0.12);
+  border-color: var(--amber);
+  box-shadow: 0 0 12px rgba(255,179,0,0.3);
+}
+.btn-live {
+  color: var(--green);
+  border-color: var(--green-dim);
+}
+.btn-live:hover, .btn-live.active {
+  background: rgba(0,230,118,0.12);
+  border-color: var(--green);
+  box-shadow: 0 0 12px rgba(0,230,118,0.3);
+}
+.btn-live.active::before {
+  content: '● ';
+  animation: blink 1s infinite;
+}
+.separator { width: 1px; height: 24px; background: var(--border); }
+.status-msg {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-mid);
+  margin-left: auto;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+/* ===================================================
+   MAIN LAYOUT GRID
+   =================================================== */
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 340px;
+  grid-template-rows: auto auto auto;
+  gap: 1px;
+  background: var(--border);
+  margin: 0;
+  min-height: calc(100vh - 92px);
+}
+
+/* ===================================================
+   PANEL / CARD BASE
+   =================================================== */
+.panel {
+  background: var(--bg-panel);
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+}
+.panel-header {
+  background: var(--bg-card);
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+.panel-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--text-mid);
+  text-transform: uppercase;
+}
+.panel-id {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-lo);
+  letter-spacing: 1px;
+}
+.panel-body {
+  padding: 16px;
+}
+
+/* ===================================================
+   MACHINE STATUS — primary panel (full-width top)
+   =================================================== */
+.status-panel {
+  grid-column: 1 / -1;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border);
+}
+.status-row {
+  display: grid;
+  grid-template-columns: 260px 1fr 1fr 1fr 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+}
+
+/* ===================================================
+   STATE BADGE
+   =================================================== */
+.state-block {
+  background: var(--bg-card);
+  padding: 20px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 6px;
+  position: relative;
+}
+.state-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--text-mid);
+  text-transform: uppercase;
+}
+.state-value {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  letter-spacing: 2px;
+  font-weight: bold;
+  transition: color 0.3s;
+}
+.state-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  animation: pulse-dot 2s infinite;
+}
+@keyframes pulse-dot {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.8); }
+}
+
+/* State color classes */
+.state-active   { color: var(--green); }
+.state-active .state-dot { background: var(--green); box-shadow: 0 0 8px var(--green); }
+.state-idle     { color: var(--gray); }
+.state-idle .state-dot { background: var(--gray); animation: none; }
+.state-warn     { color: var(--yellow); }
+.state-warn .state-dot { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+.state-fault    { color: var(--red); }
+.state-fault .state-dot { background: var(--red); box-shadow: 0 0 8px var(--red); }
+.state-nodata   { color: var(--text-lo); }
+.state-nodata .state-dot { background: var(--text-lo); animation: none; }
+
+/* Primary run-status badge (larger) */
+.run-status-block {
+  padding: 20px 24px;
+  background: var(--bg-card);
+  min-width: 260px;
+}
+.run-status-name {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--text-mid);
+  margin-bottom: 8px;
+}
+.run-status-value {
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: bold;
+  letter-spacing: 3px;
+  transition: all 0.3s;
+}
+.run-status-subtext {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-mid);
+  margin-top: 4px;
+  letter-spacing: 1px;
+}
+.run-status-bar {
+  height: 3px;
+  width: 100%;
+  margin-top: 8px;
+  background: var(--bg-highlight);
+  position: relative;
+  overflow: hidden;
+}
+.run-status-bar::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60%;
+  height: 100%;
+  background: currentColor;
+  animation: scan 2s linear infinite;
+}
+@keyframes scan { to { left: 140%; } }
+
+/* ===================================================
+   METRIC CARD (small stat)
+   =================================================== */
+.metric {
+  background: var(--bg-card);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.metric-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--text-mid);
+}
+.metric-value {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  color: var(--text-hi);
+  letter-spacing: 1px;
+  transition: color 0.3s;
+}
+.metric-unit {
+  font-size: 11px;
+  color: var(--text-mid);
+  margin-left: 4px;
+}
+.metric-sub {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-mid);
+  letter-spacing: 1px;
+}
+
+/* ===================================================
+   GAUGE (arc gauge for spindle speed)
+   =================================================== */
+.gauge-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+}
+.gauge-svg { overflow: visible; }
+.gauge-track { fill: none; stroke: var(--bg-highlight); stroke-width: 10; stroke-linecap: round; }
+.gauge-fill  { fill: none; stroke-width: 10; stroke-linecap: round;
+               transition: stroke-dashoffset 0.6s cubic-bezier(.4,0,.2,1); }
+.gauge-text-val {
+  font-family: var(--font-mono);
+  font-size: 26px;
+  fill: var(--text-hi);
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+.gauge-text-unit {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  fill: var(--text-mid);
+  text-anchor: middle;
+}
+.gauge-text-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  fill: var(--text-mid);
+  text-anchor: middle;
+  letter-spacing: 2px;
+}
+
+/* ===================================================
+   AXIS POSITION DISPLAY
+   =================================================== */
+.axis-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.2s;
+}
+.axis-row:last-child { border-bottom: none; }
+.axis-row:hover { background: var(--bg-highlight); }
+.axis-name {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--cyan);
+  width: 24px;
+}
+.axis-bar-track {
+  flex: 1;
+  height: 4px;
+  background: var(--bg-highlight);
+  border-radius: 0;
+  position: relative;
+  overflow: visible;
+}
+.axis-bar-fill {
+  height: 100%;
+  background: var(--cyan);
+  transition: width 0.5s cubic-bezier(.4,0,.2,1);
+  box-shadow: 0 0 8px var(--cyan);
+}
+.axis-value {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  color: var(--text-hi);
+  text-align: right;
+  min-width: 90px;
+}
+.axis-unit {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-mid);
+  min-width: 20px;
+}
+
+/* ===================================================
+   PRODUCTION COUNTER
+   =================================================== */
+.counter-display {
+  padding: 20px 16px;
+  text-align: center;
+}
+.counter-num {
+  font-family: var(--font-mono);
+  font-size: 52px;
+  color: var(--amber);
+  letter-spacing: 4px;
+  line-height: 1;
+  text-shadow: 0 0 20px rgba(255,179,0,0.4);
+  transition: all 0.3s;
+}
+.counter-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-mid);
+  letter-spacing: 3px;
+  margin-top: 6px;
+}
+.counter-sub {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-mid);
+  margin-top: 8px;
+}
+
+/* ===================================================
+   CYCLE TIMER + PROGRESS BAR
+   =================================================== */
+.cycle-timer {
+  font-family: var(--font-mono);
+  font-size: 32px;
+  color: var(--text-hi);
+  letter-spacing: 3px;
+  padding: 12px 16px 4px;
+  transition: color 0.3s;
+}
+.cycle-progress-outer {
+  height: 6px;
+  background: var(--bg-highlight);
+  margin: 8px 16px 4px;
+  position: relative;
+}
+.cycle-progress-fill {
+  height: 100%;
+  background: var(--green);
+  transition: width 0.5s, background 0.3s;
+  box-shadow: 0 0 8px var(--green);
+}
+.cycle-progress-fill.warn  { background: var(--yellow); box-shadow: 0 0 8px var(--yellow); }
+.cycle-progress-fill.over  { background: var(--red); box-shadow: 0 0 8px var(--red); }
+.cycle-stats {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 16px 12px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-mid);
+}
+
+/* ===================================================
+   G-CODE / ACTIVE CODES TABLE
+   =================================================== */
+.codes-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 12px 16px;
+}
+.code-chip {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 3px 8px;
+  border: 1px solid var(--border-glow);
+  background: var(--bg-highlight);
+  color: var(--cyan);
+  letter-spacing: 1px;
+  transition: all 0.2s;
+}
+.code-chip.motion { color: var(--amber); border-color: var(--amber-dim); }
+.code-chip.active { border-color: var(--cyan-dim); }
+
+/* ===================================================
+   TOOL PATH CANVAS PANEL
+   =================================================== */
+.trajectory-panel {
+  grid-column: 4;
+  grid-row: 2 / 5;
+  background: var(--bg-panel);
+  display: flex;
+  flex-direction: column;
+}
+.trajectory-canvas-wrap {
+  padding: 12px 16px;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+}
+#trajectoryCanvas {
+  background: var(--bg-deep);
+  border: 1px solid var(--border-glow);
+  display: block;
+}
+.traj-legend {
+  display: flex;
+  gap: 16px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-mid);
+  letter-spacing: 1px;
+}
+.traj-legend span::before {
+  content: '─';
+  margin-right: 4px;
+}
+.traj-legend .path-legend::before { color: var(--gray); }
+.traj-legend .point-legend::before { content: '●'; color: var(--cyan); }
+
+/* ===================================================
+   REPLAY CONTROL
+   =================================================== */
+.replay-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-top: 1px solid var(--border);
+}
+.replay-controls button {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 4px 10px;
+  border: 1px solid var(--border-glow);
+  background: var(--bg-highlight);
+  color: var(--text-hi);
+  cursor: pointer;
+  letter-spacing: 1px;
+}
+.replay-controls button:hover { border-color: var(--cyan); color: var(--cyan); }
+#replayProgress {
+  flex: 1;
+  height: 2px;
+  background: var(--bg-highlight);
+  position: relative;
+}
+#replayFill {
+  height: 100%;
+  background: var(--cyan);
+  transition: width 0.1s;
+}
+#replayStep {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-mid);
+  min-width: 40px;
+  text-align: right;
+}
+
+/* ===================================================
+   SPINDLE SECTION (col 1, row 2)
+   =================================================== */
+.spindle-panel {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+/* ===================================================
+   CYCLE PANEL (col 2, row 2)
+   =================================================== */
+.cycle-panel {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+/* ===================================================
+   PRODUCTION PANEL (col 3, row 2)
+   =================================================== */
+.production-panel {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+/* ===================================================
+   AXES PANEL (col 1-2, row 3)
+   =================================================== */
+.axes-panel {
+  grid-column: 1 / 3;
+  grid-row: 3;
+}
+
+/* ===================================================
+   GCODES + ALARMS PANEL (col 3, row 3)
+   =================================================== */
+.codes-panel {
+  grid-column: 3;
+  grid-row: 3;
+}
+
+/* ===================================================
+   ALARM STRIP
+   =================================================== */
+.alarm-strip {
+  padding: 10px 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+  border-top: 1px solid var(--border);
+}
+.alarm-strip.ok    { color: var(--green); background: rgba(0,230,118,0.04); }
+.alarm-strip.fault { color: var(--red);   background: rgba(244,67,54,0.08);
+                     animation: alert-flash 1.5s ease-in-out infinite; }
+@keyframes alert-flash { 0%,100%{opacity:1} 50%{opacity:0.6} }
+
+/* ===================================================
+   OVERRIDES ROW (feedrate / rapid / spindle override)
+   =================================================== */
+.overrides-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+}
+.override-item {
+  background: var(--bg-card);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.override-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-mid);
+  letter-spacing: 1px;
+  flex: 1;
+}
+.override-val {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  color: var(--text-hi);
+}
+.override-pct { font-size: 10px; color: var(--text-mid); }
+
+/* ===================================================
+   WORK OFFSET DISPLAY
+   =================================================== */
+.offset-display {
+  padding: 10px 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+.offset-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-mid);
+}
+.offset-row:last-child { border-bottom: none; }
+.offset-row span { color: var(--text-hi); }
+
+/* ===================================================
+   SPINDLE TIME STRIP
+   =================================================== */
+.spindle-time-strip {
+  padding: 8px 16px;
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-mid);
+}
+.spindle-time-strip span { color: var(--text-hi); }
+
+/* ===================================================
+   FOOTER
+   =================================================== */
+footer {
+  background: var(--bg-panel);
+  border-top: 1px solid var(--border);
+  padding: 6px 24px;
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-lo);
+  letter-spacing: 1px;
+}
+
+/* ===================================================
+   RESPONSIVE (basic)
+   =================================================== */
+@media (max-width: 1200px) {
+  .main-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+  .trajectory-panel { grid-column: 1 / -1; grid-row: auto; }
+  .axes-panel { grid-column: 1 / 3; }
+}
+@media (max-width: 800px) {
+  .main-grid { grid-template-columns: 1fr; }
+  .status-row { grid-template-columns: 1fr 1fr; }
+  .axes-panel, .trajectory-panel, .codes-panel, .production-panel,
+  .cycle-panel, .spindle-panel { grid-column: 1; grid-row: auto; }
+}
+</style>
+</head>
+<body>
+
+<!-- ================================================
+     HEADER
+     ================================================ -->
+<header>
+  <div class="header-left">
+    <div class="machine-badge">TM-1P</div>
+    <div>
+      <div class="header-title">HAAS<span>·</span>CNC MONITOR</div>
+      <div class="header-sub">SN 1131432 &nbsp;·&nbsp; MTConnect 1.2 &nbsp;·&nbsp; IIoT DASHBOARD</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div>
+      <div class="data-source-label">DATA SOURCE</div>
+      <div id="data-source-tag">-- NO DATA --</div>
+    </div>
+    <div id="clock">--:--:--</div>
+  </div>
+</header>
+
+<!-- ================================================
+     CONTROL BAR
+     ================================================ -->
+<div class="control-bar">
+  <label>LOAD DATA:</label>
+  <!-- Button loads the embedded Trace_current.xml snapshot data -->
+  <button class="btn btn-current" onclick="loadCurrent()">⬡ LOAD CURRENT SNAPSHOT</button>
+  <!-- Button loads the embedded Trace_samples.xml time-series data -->
+  <button class="btn btn-samples" onclick="loadSamples()">⬡ LOAD SAMPLES + TRAJECTORY</button>
+  <div class="separator"></div>
+  <!-- Button fetches live data from the MTConnect endpoint -->
+  <button class="btn btn-live" id="liveBtn" onclick="toggleLive()">⬡ LIVE FEED (148.205.38.221:8082)</button>
+  <div class="status-msg" id="statusMsg">No data loaded — click a button above</div>
+</div>
+
+<!-- ================================================
+     MAIN DASHBOARD GRID
+     ================================================ -->
+<div class="main-grid">
+
+  <!-- ── TOP STATUS BAR ── -->
+  <div class="status-panel">
+    <div class="status-row">
+
+      <!-- Run Status (primary indicator) -->
+      <div class="run-status-block">
+        <div class="run-status-name">RUN STATUS</div>
+        <div class="run-status-value state-nodata" id="runStatusVal">
+          <span class="state-dot"></span>NO DATA
+        </div>
+        <div class="run-status-subtext" id="runStatusSub">EXECUTION STATE</div>
+        <div class="run-status-bar" id="runStatusBar"></div>
+      </div>
+
+      <!-- Emergency Stop -->
+      <div class="state-block">
+        <div class="state-label">ESTOP</div>
+        <div class="state-value state-nodata" id="estopVal">—</div>
+        <div class="metric-sub" id="estopSub">EMERGENCY STOP</div>
+      </div>
+
+      <!-- Machine Condition -->
+      <div class="state-block">
+        <div class="state-label">CONDITION</div>
+        <div class="state-value state-nodata" id="conditionVal">—</div>
+        <div class="metric-sub">MACHINE COND.</div>
+      </div>
+
+      <!-- Controller Mode -->
+      <div class="state-block">
+        <div class="state-label">MODE</div>
+        <div class="state-value state-nodata" id="modeVal">—</div>
+        <div class="metric-sub">CONTROLLER MODE</div>
+      </div>
+
+      <!-- Availability -->
+      <div class="state-block">
+        <div class="state-label">AVAILABILITY</div>
+        <div class="state-value state-nodata" id="availVal">—</div>
+        <div class="metric-sub">DEVICE STATUS</div>
+      </div>
+
+      <!-- Active Alarms -->
+      <div class="state-block" style="flex:1">
+        <div class="state-label">ALARMS</div>
+        <div class="state-value state-nodata" id="alarmVal" style="font-size:13px">—</div>
+        <div class="metric-sub">ACTIVE ALARMS</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── SPINDLE PANEL ── -->
+  <div class="panel spindle-panel">
+    <div class="panel-header">
+      <span class="panel-title">SPINDLE</span>
+      <span class="panel-id">sspeed · ssovrd</span>
+    </div>
+    <div class="panel-body" style="padding:0">
+      <!-- Arc gauge drawn via SVG — shows SpindleSpeed vs 7500 rpm max -->
+      <div class="gauge-wrapper">
+        <svg class="gauge-svg" width="200" height="130" viewBox="0 0 200 130">
+          <!-- Track arc: 220° sweep centered on bottom half -->
+          <path class="gauge-track"
+                d="M 25,110 A 85,85 0 1,1 175,110"
+                id="gTrack"/>
+          <!-- Fill arc: updated via JS using stroke-dasharray trick -->
+          <path class="gauge-fill"
+                d="M 25,110 A 85,85 0 1,1 175,110"
+                id="gFill"
+                stroke="#546e7a"
+                style="stroke-dasharray:267; stroke-dashoffset:267;"/>
+          <!-- Center text: current RPM -->
+          <text class="gauge-text-val" x="100" y="96" id="gVal">—</text>
+          <text class="gauge-text-unit" x="100" y="114" id="gUnit">RPM</text>
+          <!-- Min/max labels -->
+          <text x="18" y="126" fill="#3a4a5a" font-size="9" font-family="'Share Tech Mono',monospace">0</text>
+          <text x="155" y="126" fill="#3a4a5a" font-size="9" font-family="'Share Tech Mono',monospace">7500</text>
+        </svg>
+        <div class="metric-sub" style="text-align:center">MAX 7.0 kW &nbsp;|&nbsp; <span id="ssovrdVal">—</span>% OVERRIDE</div>
+      </div>
+      <div class="spindle-time-strip">
+        SPINDLE TIME <span id="spindleTimeVal">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CYCLE TIMER PANEL ── -->
+  <div class="panel cycle-panel">
+    <div class="panel-header">
+      <span class="panel-title">CYCLE TIMER</span>
+      <span class="panel-id">tcycle · lcycle</span>
+    </div>
+    <div class="panel-body" style="padding:0">
+      <div style="padding:12px 16px 0">
+        <div class="metric-label">THIS CYCLE</div>
+      </div>
+      <!-- Large cycle time display -->
+      <div class="cycle-timer" id="thisCycleVal">—</div>
+      <!-- Progress bar: ThisCycle / LastCycle, warn if >110% -->
+      <div class="cycle-progress-outer">
+        <div class="cycle-progress-fill" id="cycleProgressBar" style="width:0%"></div>
+      </div>
+      <div class="cycle-stats">
+        <span>0 s</span>
+        <span id="cycleProgressPct">—</span>
+        <span id="lastCycleRef">LAST: — s</span>
+      </div>
+      <div style="padding:0 16px 8px">
+        <div class="metric-label">CYCLE REMAINING TIME</div>
+        <div class="metric-value" style="font-size:16px" id="cycleRemainVal">—</div>
+      </div>
+      <!-- Parts per hour estimate based on LastCycle -->
+      <div class="spindle-time-strip">
+        EST. PPH <span id="pphVal">—</span> &nbsp;|&nbsp; MACHINE RUNTIME <span id="runtimeVal">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PRODUCTION COUNTER PANEL ── -->
+  <div class="panel production-panel">
+    <div class="panel-header">
+      <span class="panel-title">PRODUCTION</span>
+      <span class="panel-id">m30c1 · m30c2</span>
+    </div>
+    <div class="panel-body" style="padding:0">
+      <div class="counter-display">
+        <!-- M30Counter1: total parts completed -->
+        <div class="counter-num" id="m30c1Val">—</div>
+        <div class="counter-label">PARTS COMPLETED (M30 COUNTER)</div>
+        <div class="counter-sub" id="m30SyncStatus">—</div>
+      </div>
+      <!-- Secondary metric: MachineRunTime -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--border)">
+        <div class="metric" style="background:var(--bg-card)">
+          <div class="metric-label">M30 COUNTER 1</div>
+          <div class="metric-value" id="m30c1b" style="font-size:16px">—</div>
+        </div>
+        <div class="metric" style="background:var(--bg-card)">
+          <div class="metric-label">M30 COUNTER 2</div>
+          <div class="metric-value" id="m30c2Val" style="font-size:16px">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TRAJECTORY PANEL (right column, spans multiple rows) ── -->
+  <div class="panel trajectory-panel">
+    <div class="panel-header">
+      <span class="panel-title">TOOL TRAJECTORY X/Y</span>
+      <span class="panel-id">x_axis · y_axis</span>
+    </div>
+    <div class="trajectory-canvas-wrap">
+      <!-- HTML5 Canvas for drawing the X/Y tool path -->
+      <!-- X range: -500 to -300 mm, Y range: -200 to -50 mm -->
+      <canvas id="trajectoryCanvas" width="300" height="260"></canvas>
+      <div class="traj-legend">
+        <span class="path-legend">PATH TRACE</span>
+        <span class="point-legend">CURRENT POS</span>
+      </div>
+      <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-mid);text-align:center;letter-spacing:1px" id="trajInfo">
+        Load samples to display trajectory
+      </div>
+    </div>
+    <!-- Animated replay control -->
+    <div class="replay-controls">
+      <button onclick="replayTrajectory()">▶ REPLAY</button>
+      <button onclick="stopReplay()">■ STOP</button>
+      <div id="replayProgress"><div id="replayFill" style="width:0%"></div></div>
+      <span id="replayStep">0/0</span>
+    </div>
+    <!-- G54 work offset reference -->
+    <div class="panel-header" style="margin-top:0">
+      <span class="panel-title">WORK OFFSET G54</span>
+      <span class="panel-id">g54</span>
+    </div>
+    <div class="offset-display">
+      <div class="offset-row">X offset <span id="g54x">—</span> mm</div>
+      <div class="offset-row">Y offset <span id="g54y">—</span> mm</div>
+      <div class="offset-row">Z offset <span id="g54z">—</span> mm</div>
+    </div>
+  </div>
+
+  <!-- ── AXES POSITION PANEL ── -->
+  <div class="panel axes-panel">
+    <div class="panel-header">
+      <span class="panel-title">AXIS POSITIONS</span>
+      <span class="panel-id">x_axis · y_axis · z_axis (ACTUAL)</span>
+    </div>
+    <div class="panel-body" style="padding:0">
+      <!-- X Axis — travel range: 0 to -762 mm -->
+      <div class="axis-row">
+        <div class="axis-name">X</div>
+        <div class="axis-bar-track">
+          <div class="axis-bar-fill" id="xBar" style="width:0%"></div>
+        </div>
+        <div class="axis-value" id="xVal">—</div>
+        <div class="axis-unit">mm</div>
+      </div>
+      <!-- Y Axis — travel range: 0 to -305 mm -->
+      <div class="axis-row">
+        <div class="axis-name">Y</div>
+        <div class="axis-bar-track">
+          <div class="axis-bar-fill" id="yBar" style="width:0%"></div>
+        </div>
+        <div class="axis-value" id="yVal">—</div>
+        <div class="axis-unit">mm</div>
+      </div>
+      <!-- Z Axis — travel range: +118.69 to -405.05 mm -->
+      <div class="axis-row">
+        <div class="axis-name" style="color:var(--amber)">Z</div>
+        <div class="axis-bar-track">
+          <div class="axis-bar-fill" id="zBar" style="width:0%; background:var(--amber); box-shadow:0 0 8px var(--amber)"></div>
+        </div>
+        <div class="axis-value" id="zVal">—</div>
+        <div class="axis-unit">mm</div>
+      </div>
+    </div>
+    <!-- Overrides row: FeedrateOverride, RapidOverride, SpindleSpeedOverride -->
+    <div class="overrides-row">
+      <div class="override-item">
+        <div class="override-label">FEEDRATE<br/>OVERRIDE</div>
+        <div class="override-val" id="fdovrdVal">—</div>
+        <div class="override-pct">%</div>
+      </div>
+      <div class="override-item">
+        <div class="override-label">RAPID<br/>OVERRIDE</div>
+        <div class="override-val" id="rovrdVal">—</div>
+        <div class="override-pct">%</div>
+      </div>
+      <div class="override-item">
+        <div class="override-label">SPINDLE<br/>OVERRIDE</div>
+        <div class="override-val" id="ssovrd2Val">—</div>
+        <div class="override-pct">%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── GCODES + TOOL PANEL ── -->
+  <div class="panel codes-panel">
+    <div class="panel-header">
+      <span class="panel-title">ACTIVE G-CODES</span>
+      <span class="panel-id">gcodes · dhmtcodes</span>
+    </div>
+    <div id="gcodesDisplay" class="codes-grid">
+      <span style="color:var(--text-lo);font-family:var(--font-mono);font-size:10px">— no data —</span>
+    </div>
+    <div class="panel-header">
+      <span class="panel-title">TOOL / DHMT</span>
+      <span class="panel-id">D·H·M·T codes</span>
+    </div>
+    <div id="dhmtDisplay" class="codes-grid">
+      <span style="color:var(--text-lo);font-family:var(--font-mono);font-size:10px">—</span>
+    </div>
+    <!-- Alarm strip at bottom -->
+    <div class="alarm-strip ok" id="alarmStrip">
+      ✓ NO ACTIVE ALARMS
+    </div>
+  </div>
+
+</div><!-- end main-grid -->
+
+<footer>
+  <span>Haas TM-1P · SN 1131432 · MTConnect 1.2.0.1.2 · sampleInterval 1000ms</span>
+  <span>IIoT Dashboard · Manufacturing Processes Module · 2023-05-10</span>
+  <span id="footerSeq">seq: —</span>
+</footer>
+
+<!-- ================================================
+     JAVASCRIPT
+     ================================================ -->
+<script>
+// =====================================================
+// EMBEDDED XML DATA STRINGS
+// The XML files are embedded here so the dashboard
+// works as a standalone local file (no server needed).
+// =====================================================
+
+/* --- Trace_current.xml embedded string --- */
+const CURRENT_XML = `<?xml version="1.0" encoding="UTF-8"?>
+<MTConnectStreams xmlns:m="urn:mtconnect.org:MTConnectStreams:1.2" xmlns="urn:mtconnect.org:MTConnectStreams:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:mtconnect.org:MTConnectStreams:1.2 http://www.mtconnect.org/schemas/MTConnectStreams_1.2.xsd">
+<Header creationTime="2023-05-10T17:38:09.035Z" sender="NGC" instanceId="1683737829" version="1.2.0.1.2" bufferSize="333" firstSequence="3745" lastSequence="4077" nextSequence="4078"/>
+<Streams>
+<DeviceStream name="TM-1P" uuid="000">
+<ComponentStream component="Spindles" componentId="spindles" name="Spindles">
+<Events>
+<Message dataItemId="sp1maxpwr" timestamp="2023-05-10T16:57:15.241Z" sequence="170" name="SpindleMaxPower">7.0</Message>
+<Message dataItemId="spindletime" timestamp="2023-05-10T17:38:08.188Z" sequence="4073" name="SpindleTime">85476</Message>
+</Events>
+</ComponentStream>
+<ComponentStream component="Gcodeoffset" componentId="gcodeoffset" name="GCodeOffset">
+<Events>
+<WorkOffset dataItemId="g54" timestamp="2023-05-10T16:57:15.215Z" sequence="117" name="G54">-448.69,-43.541,0.0,0.0,0.0,0.0</WorkOffset>
+</Events>
+</ComponentStream>
+<ComponentStream component="Axis" componentId="y_axis" name="Y">
+<Samples>
+<PathPosition dataItemId="y_axis_actual_position" timestamp="2023-05-10T17:38:08.189Z" sequence="4077" name="Y_Axis_Actual_Position" subType="ACTUAL">-106.82340040120287</PathPosition>
+</Samples>
+</ComponentStream>
+<ComponentStream component="Axis" componentId="z_axis" name="Z">
+<Samples>
+<PathPosition dataItemId="z_axis_actual_position" timestamp="2023-05-10T17:34:51.994Z" sequence="2772" name="Z_Axis_Actual_Position" subType="ACTUAL">-178.62446457093424</PathPosition>
+</Samples>
+</ComponentStream>
+<ComponentStream component="Controller" componentId="cont1" name="MachineController">
+<Samples>
+<AxisFeedrate dataItemId="rovrd" timestamp="2023-05-10T16:57:15.204Z" sequence="77" name="RapidOverride" subType="OVERRIDE">100</AxisFeedrate>
+<AccumulatedTime dataItemId="lcycle" timestamp="2023-05-10T16:57:15.266Z" sequence="233" name="LastCycle">42</AccumulatedTime>
+<AccumulatedTime dataItemId="tcycle" timestamp="2023-05-10T17:38:08.188Z" sequence="4072" name="ThisCycle">212</AccumulatedTime>
+<AccumulatedTime dataItemId="cyremtim" timestamp="2023-05-10T17:35:16.996Z" sequence="2961" name="CycleRemainingTime">0</AccumulatedTime>
+<PathFeedrate dataItemId="fdovrd" timestamp="2023-05-10T16:57:15.209Z" sequence="97" name="FeedrateOverride" subType="OVERRIDE">100</PathFeedrate>
+<SpindleSpeed dataItemId="sspeed" timestamp="2023-05-10T17:38:08.189Z" sequence="4074" name="SpindleSpeed" subType="ACTUAL">1999.51171875</SpindleSpeed>
+<SpindleSpeed dataItemId="ssovrd" timestamp="2023-05-10T16:57:15.211Z" sequence="105" name="SpindleSpeedOverride" subType="OVERRIDE">100</SpindleSpeed>
+</Samples>
+<Events>
+<EmergencyStop dataItemId="estop" timestamp="2023-05-10T17:08:12.402Z" sequence="1062" name="EmergencyStop">ARMED</EmergencyStop>
+<Message dataItemId="machineruntime" timestamp="2023-05-10T17:38:08.189Z" sequence="4075" name="MachineRunTime">764930</Message>
+<ControllerMode dataItemId="mode" timestamp="2023-05-10T17:34:33.991Z" sequence="2669" name="Mode">MANUAL_DATA_INPUT</ControllerMode>
+<Execution dataItemId="rstat" timestamp="2023-05-10T17:34:35.997Z" sequence="2682" name="RunStatus">ACTIVE</Execution>
+<Message dataItemId="aalarms" timestamp="2023-05-10T17:08:12.402Z" sequence="1060" name="ActiveAlarms">NO ACTIVE ALARMS</Message>
+<Message dataItemId="m30c2" timestamp="2023-05-10T17:38:03.188Z" sequence="4032" name="M30Counter2">5522</Message>
+<Message dataItemId="m30c1" timestamp="2023-05-10T17:38:03.188Z" sequence="4031" name="M30Counter1">5522</Message>
+<Program dataItemId="ncprog" timestamp="2023-05-10T16:57:15.252Z" sequence="196" name="Program">Place holder file.nc</Program>
+</Events>
+<Condition>
+<Normal dataItemId="mcond" timestamp="2023-05-10T17:08:12.401Z" sequence="1059" type="SYSTEM" name="MachineCondition"/>
+</Condition>
+</ComponentStream>
+<ComponentStream component="Axis" componentId="x_axis" name="X">
+<Samples>
+<PathPosition dataItemId="x_axis_actual_position" timestamp="2023-05-10T17:38:08.189Z" sequence="4076" name="X_Axis_Actual_Position" subType="ACTUAL">-446.754922917424</PathPosition>
+</Samples>
+</ComponentStream>
+<ComponentStream component="Activecodes" componentId="activecodes" name="ActiveCodes">
+<Events>
+<Message dataItemId="dhmtcodes" timestamp="2023-05-10T17:38:05.188Z" sequence="4055" name="DHMT_Codes">00,00,03,01</Message>
+<Message dataItemId="gcodes" timestamp="2023-05-10T17:38:05.188Z" sequence="4058" name="Gcodes">G03,G17,G90,G94,G21,G40,G43,G80,G98,G50,G59,G269,G64,G69,G170,G255</Message>
+</Events>
+</ComponentStream>
+<ComponentStream component="Device" componentId="dev1" name="TM-1P" uuid="000">
+<Events>
+<Availability dataItemId="avail" timestamp="2023-05-10T16:57:13.138Z" sequence="1" name="Availability">AVAILABLE</Availability>
+</Events>
+</ComponentStream>
+</DeviceStream>
+</Streams>
+</MTConnectStreams>`;
+
+/* --- Trace_samples.xml embedded string (16s time-series) --- */
+const SAMPLES_XML = `<?xml version="1.0" encoding="UTF-8"?>
+<MTConnectStreams xmlns:m="urn:mtconnect.org:MTConnectStreams:1.2" xmlns="urn:mtconnect.org:MTConnectStreams:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:mtconnect.org:MTConnectStreams:1.2 http://www.mtconnect.org/schemas/MTConnectStreams_1.2.xsd">
+<Header creationTime="2023-05-10T17:41:46.625Z" sender="NGC" instanceId="1683737829" version="1.2.0.1.2" bufferSize="333" firstSequence="5160" lastSequence="5259" nextSequence="5260"/>
+<Streams>
+<DeviceStream name="TM-1P" uuid="000">
+<ComponentStream component="Axis" componentId="x_axis" name="X">
+<Samples>
+<PathPosition dataItemId="x_axis_actual_position" timestamp="2023-05-10T17:40:54.240Z" sequence="5160" name="X_Axis_Actual_Position" subType="ACTUAL">-404.4854174874717</PathPosition>
+<PathPosition dataItemId="x_axis_actual_position" timestamp="2023-05-10T17:40:55.240Z" sequence="5166" name="X_Axis_Actual_Position" subType="ACTUAL">-435.2871183230719</PathPosition>
+<PathPosition dataItemId="x_axis_actual_position" timestamp="2023-05-10T17:40:56.241Z" sequence="5172" name="X_Axis_Actual_Position" subType="ACTUAL">-450.7776610008905</PathPosition>
+<PathPosition dataItemId="x_axis_actual_position" timestamp="2023-05-10T17:40:57.245Z" sequence="5177" name="X_Axis_Actual_Position" subType="ACTUAL">-443.5137453018194</PathPosition>
+<PathPosition dataItemId="x_axis_actual_position" timestamp="2023-05-10T17:40:58.245Z" sequence="5182" name="X_Axis_Actual_Position" subType="ACTUAL">-417.1216316119471</PathPosition>
+<PathPosition dataItemId="x_axis_actual_position" timestamp="2023-05-10T17:40:59.245Z" sequence="5189" name="X_Axis_Actual_Position" subType="ACTUAL">-384.3609571853078</PathPosition>
+<PathPosition dataItemId="x_axis_actual_position" timestamp="2023-05-10T17:41:00.245Z" sequence="5195" name="X_Axis_Actual_Position" subType="ACTUAL">-358.42467635119795</PathPosition>
+<PathPosition dataItemId="x_axis_actual_position" timestamp="2023-05-10T17:41:01.246Z" sequence="5201" name="X_Axis_Actual_Position" subType="ACTUAL">-351.8926944952184</PathPosition>
+<PathPosition dataItemId="x_axis_actual_position" timestamp="2023-05-10T17:41:02.246Z" sequence="5207" name="X_Axis_Actual_Position" subType="ACTUAL">-367.35880861432776</PathPosition>
+<PathPosition dataItemId="x_axis_actual_position" timestamp="2023-05-10T17:41:03.246Z" sequence="5213" name="X_Axis_Actual_Position" subType="ACTUAL">-399.1085442045309</PathPosition>
+<PathPosition dataItemId="x_axis_actual_position" timestamp="2023-05-10T17:41:04.247Z" sequence="5223" name="X_Axis_Actual_Position" subType="ACTUAL">-401.2545370398237</PathPosition>
+<PathPosition dataItemId="x_axis_actual_position" timestamp="2023-05-10T17:41:05.246Z" sequence="5232" name="X_Axis_Actual_Position" subType="ACTUAL">-399.19756201879005</PathPosition>
+<PathPosition dataItemId="x_axis_actual_position" timestamp="2023-05-10T17:41:06.246Z" sequence="5238" name="X_Axis_Actual_Position" subType="ACTUAL">-396.10741504422543</PathPosition>
+<PathPosition dataItemId="x_axis_actual_position" timestamp="2023-05-10T17:41:07.247Z" sequence="5245" name="X_Axis_Actual_Position" subType="ACTUAL">-420.0475502060887</PathPosition>
+<PathPosition dataItemId="x_axis_actual_position" timestamp="2023-05-10T17:41:08.246Z" sequence="5251" name="X_Axis_Actual_Position" subType="ACTUAL">-445.097922192882</PathPosition>
+<PathPosition dataItemId="x_axis_actual_position" timestamp="2023-05-10T17:41:09.246Z" sequence="5255" name="X_Axis_Actual_Position" subType="ACTUAL">-450.61953104237574</PathPosition>
+</Samples>
+</ComponentStream>
+<ComponentStream component="Axis" componentId="y_axis" name="Y">
+<Samples>
+<PathPosition dataItemId="y_axis_actual_position" timestamp="2023-05-10T17:40:54.240Z" sequence="5161" name="Y_Axis_Actual_Position" subType="ACTUAL">-77.65658375378014</PathPosition>
+<PathPosition dataItemId="y_axis_actual_position" timestamp="2023-05-10T17:40:55.240Z" sequence="5167" name="Y_Axis_Actual_Position" subType="ACTUAL">-90.92195330019393</PathPosition>
+<PathPosition dataItemId="y_axis_actual_position" timestamp="2023-05-10T17:40:56.241Z" sequence="5173" name="Y_Axis_Actual_Position" subType="ACTUAL">-120.66684320433791</PathPosition>
+<PathPosition dataItemId="y_axis_actual_position" timestamp="2023-05-10T17:40:57.245Z" sequence="5178" name="Y_Axis_Actual_Position" subType="ACTUAL">-154.27405999653655</PathPosition>
+<PathPosition dataItemId="y_axis_actual_position" timestamp="2023-05-10T17:40:58.245Z" sequence="5183" name="Y_Axis_Actual_Position" subType="ACTUAL">-174.96636805098746</PathPosition>
+<PathPosition dataItemId="y_axis_actual_position" timestamp="2023-05-10T17:40:59.245Z" sequence="5190" name="Y_Axis_Actual_Position" subType="ACTUAL">-174.61041604946604</PathPosition>
+<PathPosition dataItemId="y_axis_actual_position" timestamp="2023-05-10T17:41:00.246Z" sequence="5196" name="Y_Axis_Actual_Position" subType="ACTUAL">-153.34954384790066</PathPosition>
+<PathPosition dataItemId="y_axis_actual_position" timestamp="2023-05-10T17:41:01.246Z" sequence="5202" name="Y_Axis_Actual_Position" subType="ACTUAL">-119.5924287326652</PathPosition>
+<PathPosition dataItemId="y_axis_actual_position" timestamp="2023-05-10T17:41:02.246Z" sequence="5208" name="Y_Axis_Actual_Position" subType="ACTUAL">-90.79527635938997</PathPosition>
+<PathPosition dataItemId="y_axis_actual_position" timestamp="2023-05-10T17:41:03.246Z" sequence="5214" name="Y_Axis_Actual_Position" subType="ACTUAL">-77.59816195478504</PathPosition>
+<PathPosition dataItemId="y_axis_actual_position" timestamp="2023-05-10T17:41:04.247Z" sequence="5224" name="Y_Axis_Actual_Position" subType="ACTUAL">-103.28442417651289</PathPosition>
+<PathPosition dataItemId="y_axis_actual_position" timestamp="2023-05-10T17:41:05.246Z" sequence="5233" name="Y_Axis_Actual_Position" subType="ACTUAL">-123.58874856278914</PathPosition>
+<PathPosition dataItemId="y_axis_actual_position" timestamp="2023-05-10T17:41:06.246Z" sequence="5239" name="Y_Axis_Actual_Position" subType="ACTUAL">-90.1946421133429</PathPosition>
+<PathPosition dataItemId="y_axis_actual_position" timestamp="2023-05-10T17:41:07.247Z" sequence="5246" name="Y_Axis_Actual_Position" subType="ACTUAL">-81.21831932489378</PathPosition>
+<PathPosition dataItemId="y_axis_actual_position" timestamp="2023-05-10T17:41:08.246Z" sequence="5252" name="Y_Axis_Actual_Position" subType="ACTUAL">-103.51617119143029</PathPosition>
+<PathPosition dataItemId="y_axis_actual_position" timestamp="2023-05-10T17:41:09.246Z" sequence="5256" name="Y_Axis_Actual_Position" subType="ACTUAL">-119.611996479481</PathPosition>
+</Samples>
+</ComponentStream>
+<ComponentStream component="Controller" componentId="cont1" name="MachineController">
+<Samples>
+<AccumulatedTime dataItemId="tcycle" timestamp="2023-05-10T17:40:55.240Z" sequence="5162" name="ThisCycle">379</AccumulatedTime>
+<SpindleSpeed dataItemId="sspeed" timestamp="2023-05-10T17:40:55.240Z" sequence="5164" name="SpindleSpeed" subType="ACTUAL">1999.8046875</SpindleSpeed>
+<AccumulatedTime dataItemId="tcycle" timestamp="2023-05-10T17:40:56.241Z" sequence="5168" name="ThisCycle">380</AccumulatedTime>
+<SpindleSpeed dataItemId="sspeed" timestamp="2023-05-10T17:40:56.241Z" sequence="5170" name="SpindleSpeed" subType="ACTUAL">1999.51171875</SpindleSpeed>
+<AccumulatedTime dataItemId="tcycle" timestamp="2023-05-10T17:41:00.245Z" sequence="5191" name="ThisCycle">384</AccumulatedTime>
+<SpindleSpeed dataItemId="sspeed" timestamp="2023-05-10T17:41:00.245Z" sequence="5193" name="SpindleSpeed" subType="ACTUAL">1999.658203125</SpindleSpeed>
+<AccumulatedTime dataItemId="tcycle" timestamp="2023-05-10T17:41:03.246Z" sequence="5209" name="ThisCycle">387</AccumulatedTime>
+<SpindleSpeed dataItemId="sspeed" timestamp="2023-05-10T17:41:03.246Z" sequence="5211" name="SpindleSpeed" subType="ACTUAL">1999.51171875</SpindleSpeed>
+<AccumulatedTime dataItemId="tcycle" timestamp="2023-05-10T17:41:10.246Z" sequence="5257" name="ThisCycle">394</AccumulatedTime>
+</Samples>
+<Events>
+<Message dataItemId="machineruntime" timestamp="2023-05-10T17:40:55.240Z" sequence="5165" name="MachineRunTime">765097</Message>
+<Message dataItemId="machineruntime" timestamp="2023-05-10T17:41:10.246Z" sequence="5259" name="MachineRunTime">765112</Message>
+<Message dataItemId="m30c1" timestamp="2023-05-10T17:41:04.246Z" sequence="5215" name="M30Counter1">5536</Message>
+<Message dataItemId="m30c2" timestamp="2023-05-10T17:41:04.246Z" sequence="5216" name="M30Counter2">5536</Message>
+</Events>
+</ComponentStream>
+<ComponentStream component="Spindles" componentId="spindles" name="Spindles">
+<Events>
+<Message dataItemId="spindletime" timestamp="2023-05-10T17:40:55.240Z" sequence="5163" name="SpindleTime">85643</Message>
+<Message dataItemId="spindletime" timestamp="2023-05-10T17:41:10.246Z" sequence="5258" name="SpindleTime">85658</Message>
+</Events>
+</ComponentStream>
+<ComponentStream component="Activecodes" componentId="activecodes" name="ActiveCodes">
+<Events>
+<Message dataItemId="gcodes" timestamp="2023-05-10T17:41:04.247Z" sequence="5225" name="Gcodes">G01,G17,G90,G94,G21,G40,G43,G80,G98,G50,G59,G269,G64,G69,G170,G255</Message>
+<Message dataItemId="dhmtcodes" timestamp="2023-05-10T17:41:04.247Z" sequence="5222" name="DHMT_Codes">00,00,06,01</Message>
+</Events>
+</ComponentStream>
+</DeviceStream>
+</Streams>
+</MTConnectStreams>`;
+
+// =====================================================
+// STATE: trajectory data, replay timer, live mode
+// =====================================================
+let trajectoryPoints = [];  // Array of {x, y, timestamp} from samples
+let replayTimer = null;     // setInterval handle for animated replay
+let replayIndex = 0;        // Current step in replay animation
+let liveMode = false;       // Whether live polling is active
+let liveInterval = null;    // setInterval handle for live polling
+
+// =====================================================
+// CLOCK — updates every second
+// =====================================================
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toUTCString().slice(17, 25) + ' UTC';
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// =====================================================
+// XML PARSER HELPER
+// Parses XML string using DOMParser, returns document.
+// Uses namespace-aware querySelector fallback for
+// MTConnect namespace-prefixed elements.
+// =====================================================
+function parseXML(xmlString) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(xmlString, 'text/xml');
+  return doc;
+}
+
+// Helper: select by dataItemId attribute (works across namespaces)
+function getByItemId(doc, id) {
+  return doc.querySelector(`[dataItemId="${id}"]`);
+}
+
+// Helper: get last element matching dataItemId (most recent sample)
+function getLastByItemId(doc, id) {
+  const nodes = doc.querySelectorAll(`[dataItemId="${id}"]`);
+  return nodes.length ? nodes[nodes.length - 1] : null;
+}
+
+// Helper: get value of element or return fallback string
+function val(el, fallback = '—') {
+  return el ? el.textContent.trim() : fallback;
+}
+
+// =====================================================
+// LOAD CURRENT SNAPSHOT (Trace_current.xml)
+// Populates all widgets with the /current endpoint data
+// =====================================================
+function loadCurrent() {
+  const doc = parseXML(CURRENT_XML);
+
+  // Extract header creationTime for data-source tag
+  const header = doc.querySelector('Header');
+  const creationTime = header ? header.getAttribute('creationTime') : '—';
+  document.getElementById('data-source-tag').textContent = '/current · ' + creationTime.slice(0,19) + 'Z';
+  document.getElementById('statusMsg').textContent = 'Loaded: Trace_current.xml (snapshot at ' + creationTime.slice(11,19) + ' UTC)';
+
+  // ─── RunStatus (dataItemId="rstat") — EXECUTION event ───────────────
+  const runEl = getByItemId(doc, 'rstat');
+  const runVal = val(runEl);
+  setRunStatus(runVal);
+
+  // ─── EmergencyStop (dataItemId="estop") ─────────────────────────────
+  const estopEl = getByItemId(doc, 'estop');
+  const estopVal = val(estopEl);
+  const estopWidget = document.getElementById('estopVal');
+  estopWidget.textContent = estopVal;
+  // ARMED = normal (not triggered); TRIGGERED = fault
+  estopWidget.className = 'state-value ' + (estopVal === 'ARMED' ? 'state-active' : 'state-fault');
+
+  // ─── MachineCondition — <Normal> or <Fault> child of <Condition> ────
+  const condNormal = doc.querySelector('Condition Normal');
+  const condFault  = doc.querySelector('Condition Fault');
+  const condWidget = document.getElementById('conditionVal');
+  if (condFault) {
+    condWidget.textContent = 'FAULT';
+    condWidget.className = 'state-value state-fault';
+  } else if (condNormal) {
+    condWidget.textContent = 'NORMAL';
+    condWidget.className = 'state-value state-active';
+  } else {
+    condWidget.textContent = '—';
+    condWidget.className = 'state-value state-nodata';
+  }
+
+  // ─── Controller Mode (dataItemId="mode") ────────────────────────────
+  const modeEl = getByItemId(doc, 'mode');
+  const modeVal = val(modeEl);
+  document.getElementById('modeVal').textContent = modeVal.replace(/_/g,' ');
+  document.getElementById('modeVal').className = 'state-value state-idle';
+
+  // ─── Availability (dataItemId="avail") ──────────────────────────────
+  const availEl = getByItemId(doc, 'avail');
+  const availVal = val(availEl);
+  const availWidget = document.getElementById('availVal');
+  availWidget.textContent = availVal;
+  availWidget.className = 'state-value ' + (availVal === 'AVAILABLE' ? 'state-active' : 'state-fault');
+
+  // ─── Active Alarms (dataItemId="aalarms") ───────────────────────────
+  const alarmEl = getByItemId(doc, 'aalarms');
+  const alarmText = val(alarmEl);
+  setAlarms(alarmText);
+
+  // ─── SpindleSpeed (dataItemId="sspeed") — SAMPLE ────────────────────
+  // Uses last element (most recent value)
+  const speedEl = getLastByItemId(doc, 'sspeed');
+  const speed = speedEl ? parseFloat(speedEl.textContent) : null;
+  updateSpindleGauge(speed);
+
+  // ─── SpindleSpeedOverride (dataItemId="ssovrd") ──────────────────────
+  const ssovrdEl = getByItemId(doc, 'ssovrd');
+  const ssovrd = val(ssovrdEl);
+  document.getElementById('ssovrdVal').textContent = ssovrd;
+  document.getElementById('ssovrd2Val').textContent = ssovrd;
+
+  // ─── SpindleTime (dataItemId="spindletime") ──────────────────────────
+  const stEl = getLastByItemId(doc, 'spindletime');
+  const stSec = stEl ? parseInt(stEl.textContent) : null;
+  document.getElementById('spindleTimeVal').textContent =
+    stSec !== null ? stSec + ' s  (' + (stSec/3600).toFixed(1) + ' h)' : '—';
+
+  // ─── ThisCycle (dataItemId="tcycle") — last sample ───────────────────
+  const tcEl = getLastByItemId(doc, 'tcycle');
+  const tc = tcEl ? parseInt(tcEl.textContent) : null;
+
+  // ─── LastCycle (dataItemId="lcycle") — reference duration ────────────
+  const lcEl = getByItemId(doc, 'lcycle');
+  const lc = lcEl ? parseInt(lcEl.textContent) : null;
+  updateCycleTimer(tc, lc);
+
+  // ─── CycleRemainingTime (dataItemId="cyremtim") ──────────────────────
+  const crEl = getByItemId(doc, 'cyremtim');
+  document.getElementById('cycleRemainVal').textContent =
+    crEl ? crEl.textContent + ' s' : '—';
+
+  // ─── MachineRunTime (dataItemId="machineruntime") ────────────────────
+  const rtEl = getLastByItemId(doc, 'machineruntime');
+  const rtSec = rtEl ? parseInt(rtEl.textContent) : null;
+  document.getElementById('runtimeVal').textContent =
+    rtSec !== null ? (rtSec/3600).toFixed(1) + ' h' : '—';
+
+  // ─── FeedrateOverride (dataItemId="fdovrd") ──────────────────────────
+  const fdEl = getByItemId(doc, 'fdovrd');
+  document.getElementById('fdovrdVal').textContent = val(fdEl);
+
+  // ─── RapidOverride (dataItemId="rovrd") ──────────────────────────────
+  const roEl = getByItemId(doc, 'rovrd');
+  document.getElementById('rovrdVal').textContent = val(roEl);
+
+  // ─── M30Counter1 and M30Counter2 (dataItemId="m30c1" / "m30c2") ──────
+  const m1El = getLastByItemId(doc, 'm30c1');
+  const m2El = getLastByItemId(doc, 'm30c2');
+  const m1 = m1El ? parseInt(m1El.textContent) : null;
+  const m2 = m2El ? parseInt(m2El.textContent) : null;
+  updateCounters(m1, m2, lc);
+
+  // ─── Axis X (dataItemId="x_axis_actual_position") ────────────────────
+  const xEl = getLastByItemId(doc, 'x_axis_actual_position');
+  const xPos = xEl ? parseFloat(xEl.textContent) : null;
+  updateAxis('x', xPos, 0, -762); // travel range 0 to -762 mm
+
+  // ─── Axis Y (dataItemId="y_axis_actual_position") ────────────────────
+  const yEl = getLastByItemId(doc, 'y_axis_actual_position');
+  const yPos = yEl ? parseFloat(yEl.textContent) : null;
+  updateAxis('y', yPos, 0, -305); // travel range 0 to -305 mm
+
+  // ─── Axis Z (dataItemId="z_axis_actual_position") ────────────────────
+  const zEl = getLastByItemId(doc, 'z_axis_actual_position');
+  const zPos = zEl ? parseFloat(zEl.textContent) : null;
+  updateAxis('z', zPos, 118.69, -405.05); // travel range +118.69 to -405.05 mm
+
+  // ─── G-Codes (dataItemId="gcodes") ───────────────────────────────────
+  const gcEl = getLastByItemId(doc, 'gcodes');
+  if (gcEl) renderGcodes(gcEl.textContent.trim());
+
+  // ─── DHMT Codes (dataItemId="dhmtcodes") ─────────────────────────────
+  const dhmtEl = getLastByItemId(doc, 'dhmtcodes');
+  if (dhmtEl) renderDhmt(dhmtEl.textContent.trim());
+
+  // ─── G54 Work Offset (dataItemId="g54") ──────────────────────────────
+  const g54El = getByItemId(doc, 'g54');
+  if (g54El) {
+    const parts = g54El.textContent.split(',');
+    document.getElementById('g54x').textContent = parseFloat(parts[0]).toFixed(3);
+    document.getElementById('g54y').textContent = parseFloat(parts[1]).toFixed(3);
+    document.getElementById('g54z').textContent = parseFloat(parts[2]).toFixed(3);
+  }
+
+  // ─── lastSequence from header ─────────────────────────────────────────
+  document.getElementById('footerSeq').textContent =
+    'seq: ' + (header ? header.getAttribute('lastSequence') : '—');
+}
+
+// =====================================================
+// LOAD SAMPLES (Trace_samples.xml)
+// Extracts latest values AND builds trajectory array
+// =====================================================
+function loadSamples() {
+  const doc = parseXML(SAMPLES_XML);
+
+  // Update data source label
+  const header = doc.querySelector('Header');
+  const ctime = header ? header.getAttribute('creationTime') : '—';
+  document.getElementById('data-source-tag').textContent = '/sample · ' + ctime.slice(0,19) + 'Z';
+  document.getElementById('statusMsg').textContent = 'Loaded: Trace_samples.xml (16-second window 17:40:54–17:41:10 UTC)';
+
+  // ─── SpindleSpeed: all samples → use last for display ────────────────
+  const speedNodes = doc.querySelectorAll('[dataItemId="sspeed"]');
+  const latestSpeed = speedNodes.length
+    ? parseFloat(speedNodes[speedNodes.length - 1].textContent)
+    : null;
+  updateSpindleGauge(latestSpeed);
+
+  // ─── ThisCycle: last value ────────────────────────────────────────────
+  const tcNodes = doc.querySelectorAll('[dataItemId="tcycle"]');
+  const latestTc = tcNodes.length
+    ? parseInt(tcNodes[tcNodes.length - 1].textContent)
+    : null;
+  // LastCycle not in samples file, use reference value 392 s (~6.5 min)
+  updateCycleTimer(latestTc, 392);
+
+  // ─── M30Counter1 / M30Counter2 ────────────────────────────────────────
+  const m1El = getLastByItemId(doc, 'm30c1');
+  const m2El = getLastByItemId(doc, 'm30c2');
+  const m1 = m1El ? parseInt(m1El.textContent) : null;
+  const m2 = m2El ? parseInt(m2El.textContent) : null;
+  updateCounters(m1, m2, 392);
+
+  // ─── MachineRunTime: last value ───────────────────────────────────────
+  const rtEl = getLastByItemId(doc, 'machineruntime');
+  const rtSec = rtEl ? parseInt(rtEl.textContent) : null;
+  document.getElementById('runtimeVal').textContent =
+    rtSec !== null ? (rtSec/3600).toFixed(1) + ' h' : '—';
+
+  // ─── SpindleTime: last value ──────────────────────────────────────────
+  const stNodes = doc.querySelectorAll('[dataItemId="spindletime"]');
+  const latestSt = stNodes.length
+    ? parseInt(stNodes[stNodes.length - 1].textContent)
+    : null;
+  document.getElementById('spindleTimeVal').textContent =
+    latestSt !== null ? latestSt + ' s  (' + (latestSt/3600).toFixed(1) + ' h)' : '—';
+
+  // ─── X/Y axis positions: build trajectory array ───────────────────────
+  // querySelectorAll by dataItemId — gets all 16 position samples
+  const xNodes = doc.querySelectorAll('[dataItemId="x_axis_actual_position"]');
+  const yNodes = doc.querySelectorAll('[dataItemId="y_axis_actual_position"]');
+
+  // Build parallel arrays of {x, y, timestamp}
+  trajectoryPoints = Array.from(xNodes).map((el, i) => ({
+    x:  parseFloat(el.textContent),                      // machine mm
+    y:  yNodes[i] ? parseFloat(yNodes[i].textContent) : null,
+    ts: el.getAttribute('timestamp')
+  })).filter(p => p.y !== null);
+
+  // Show last X/Y position in axis widgets
+  if (trajectoryPoints.length > 0) {
+    const last = trajectoryPoints[trajectoryPoints.length - 1];
+    updateAxis('x', last.x, 0, -762);
+    updateAxis('y', last.y, 0, -305);
+  }
+
+  // Z not included in samples file → mark unavailable
+  document.getElementById('zVal').textContent = 'N/A';
+  document.getElementById('zBar').style.width = '0%';
+
+  // ─── G-Codes ──────────────────────────────────────────────────────────
+  const gcEl = getLastByItemId(doc, 'gcodes');
+  if (gcEl) renderGcodes(gcEl.textContent.trim());
+
+  const dhmtEl = getLastByItemId(doc, 'dhmtcodes');
+  if (dhmtEl) renderDhmt(dhmtEl.textContent.trim());
+
+  // ─── Draw trajectory on Canvas ────────────────────────────────────────
+  drawTrajectory(trajectoryPoints, trajectoryPoints.length);
+
+  // Update trajectory info text
+  document.getElementById('trajInfo').textContent =
+    `${trajectoryPoints.length} pts · X: ${Math.min(...trajectoryPoints.map(p=>p.x)).toFixed(1)} to ${Math.max(...trajectoryPoints.map(p=>p.x)).toFixed(1)} mm · Y: ${Math.min(...trajectoryPoints.map(p=>p.y)).toFixed(1)} to ${Math.max(...trajectoryPoints.map(p=>p.y)).toFixed(1)} mm`;
+
+  // Update replay controls
+  document.getElementById('replayStep').textContent = trajectoryPoints.length + '/' + trajectoryPoints.length;
+
+  document.getElementById('footerSeq').textContent =
+    'seq: ' + (header ? header.getAttribute('lastSequence') : '—');
+}
+
+// =====================================================
+// SET RUN STATUS — updates the primary status widget
+// with state-dependent color and label
+// =====================================================
+function setRunStatus(status) {
+  const el = document.getElementById('runStatusVal');
+  const sub = document.getElementById('runStatusSub');
+  const bar = document.getElementById('runStatusBar');
+  let cls, subtext;
+  switch (status) {
+    case 'ACTIVE':
+      cls = 'state-active'; subtext = 'Program executing'; break;
+    case 'FEED_HOLD':
+      cls = 'state-warn';   subtext = 'Feedhold — check required'; break;
+    case 'READY':
+      cls = 'state-idle';   subtext = 'Idle — awaiting program'; break;
+    case 'INTERRUPTED':
+    case 'STOPPED':
+      cls = 'state-fault';  subtext = 'Stopped — intervention required'; break;
+    default:
+      cls = 'state-nodata'; subtext = 'Unknown state';
+  }
+  el.innerHTML = `<span class="state-dot"></span>${status}`;
+  el.className = 'run-status-value ' + cls;
+  sub.textContent = subtext;
+  // Set bar color to match state via currentColor
+  bar.style.color = getComputedStyle(document.documentElement)
+    .getPropertyValue('--' + cls.replace('state-',''));
+}
+
+// =====================================================
+// SET ALARMS — updates alarm strip and status icon
+// =====================================================
+function setAlarms(text) {
+  const strip = document.getElementById('alarmStrip');
+  const widget = document.getElementById('alarmVal');
+  const isOk = text.toLowerCase().includes('no active');
+  strip.textContent = isOk ? '✓ ' + text : '⚠ ' + text;
+  strip.className = 'alarm-strip ' + (isOk ? 'ok' : 'fault');
+  widget.textContent = isOk ? 'NONE' : 'ACTIVE!';
+  widget.className = 'state-value ' + (isOk ? 'state-active' : 'state-fault');
+}
+
+// =====================================================
+// UPDATE SPINDLE GAUGE
+// Draws arc gauge from 0–7500 rpm. Path total arc = 267px
+// (measured empirically for the SVG path used).
+// =====================================================
+function updateSpindleGauge(rpm) {
+  const maxRPM = 7500;
+  const arcLength = 267; // total stroke length for the 220° arc path
+
+  const gFill = document.getElementById('gFill');
+  const gVal  = document.getElementById('gVal');
+  const gUnit = document.getElementById('gUnit');
+
+  if (rpm === null) {
+    gVal.textContent = '—';
+    gFill.style.strokeDashoffset = arcLength; // empty gauge
+    gFill.style.stroke = '#546e7a';
+    return;
+  }
+
+  // Clamp RPM to display range
+  const clamped = Math.min(Math.max(rpm, 0), maxRPM);
+  const fraction = clamped / maxRPM;
+  const offset = arcLength * (1 - fraction); // offset from full
+
+  // Color: green below 6000, amber approaching max, red at max
+  let color = '#00e676';
+  if (rpm > 6000) color = '#ffb300';
+  if (rpm > 7000) color = '#f44336';
+
+  gFill.style.strokeDashoffset = offset;
+  gFill.style.stroke = color;
+  gVal.textContent = Math.round(rpm);
+  gVal.style.fill = color;
+  gUnit.textContent = 'RPM';
+}
+
+// =====================================================
+// UPDATE CYCLE TIMER
+// Shows ThisCycle with progress bar vs LastCycle
+// =====================================================
+function updateCycleTimer(tc, lc) {
+  const tcEl = document.getElementById('thisCycleVal');
+  const bar  = document.getElementById('cycleProgressBar');
+  const pct  = document.getElementById('cycleProgressPct');
+  const lcRef = document.getElementById('lastCycleRef');
+  const pphEl = document.getElementById('pphVal');
+
+  if (tc === null) {
+    tcEl.textContent = '— s';
+    return;
+  }
+  tcEl.textContent = tc + ' s  (' + (tc/60).toFixed(1) + ' min)';
+
+  if (lc !== null && lc > 0) {
+    const ratio = tc / lc;
+    const pctVal = Math.min(ratio * 100, 100);
+    bar.style.width = pctVal.toFixed(1) + '%';
+
+    // Color: green < 100%, warn > 110%, over > 125%
+    if (ratio > 1.25) bar.className = 'cycle-progress-fill over';
+    else if (ratio > 1.10) bar.className = 'cycle-progress-fill warn';
+    else bar.className = 'cycle-progress-fill';
+
+    pct.textContent = (ratio * 100).toFixed(0) + '% of ref';
+    lcRef.textContent = 'LAST: ' + lc + ' s';
+
+    // Parts per hour: 3600 / LastCycle seconds
+    const pph = (3600 / lc).toFixed(1);
+    pphEl.textContent = pph + ' pcs/h';
+  }
+}
+
+// =====================================================
+// UPDATE PART COUNTERS (M30Counter1 / M30Counter2)
+// =====================================================
+function updateCounters(m1, m2, lc) {
+  const v1 = m1 !== null ? m1.toLocaleString() : '—';
+  document.getElementById('m30c1Val').textContent = v1;
+  document.getElementById('m30c1b').textContent   = m1 !== null ? m1 : '—';
+  document.getElementById('m30c2Val').textContent = m2 !== null ? m2 : '—';
+
+  // Synchronization status: counters should match
+  if (m1 !== null && m2 !== null) {
+    const synced = m1 === m2;
+    document.getElementById('m30SyncStatus').textContent =
+      synced ? '✓ C1 = C2 (synchronized)' : '⚠ C1 ≠ C2 (mismatch!)';
+  }
+}
+
+// =====================================================
+// UPDATE AXIS POSITION
+// Draws progress bar proportional to travel range
+// =====================================================
+function updateAxis(axis, position, max, min) {
+  const valEl = document.getElementById(axis + 'Val');
+  const barEl = document.getElementById(axis + 'Bar');
+
+  if (position === null) {
+    valEl.textContent = '—';
+    barEl.style.width = '0%';
+    return;
+  }
+
+  valEl.textContent = position.toFixed(3);
+
+  // Calculate percentage of travel range (0% = min end, 100% = max end)
+  const range = max - min;
+  const pct = Math.max(0, Math.min(100, ((position - min) / range) * 100));
+  barEl.style.width = pct.toFixed(1) + '%';
+}
+
+// =====================================================
+// RENDER G-CODES as colored chips
+// Motion codes (G01, G02, G03) get amber highlight
+// =====================================================
+function renderGcodes(gcodeStr) {
+  const codes = gcodeStr.split(',').map(c => c.trim()).filter(Boolean);
+  const motionCodes = new Set(['G00','G01','G02','G03','G33','G70','G71','G72','G73','G74','G75','G76','G77','G78','G79']);
+
+  const container = document.getElementById('gcodesDisplay');
+  container.innerHTML = codes.map(code => {
+    const isMotion = motionCodes.has(code.toUpperCase());
+    return `<span class="code-chip ${isMotion ? 'motion' : 'active'}">${code}</span>`;
+  }).join('');
+}
+
+// =====================================================
+// RENDER DHMT CODES (D, H, M, T offset/tool codes)
+// =====================================================
+function renderDhmt(dhmtStr) {
+  const parts = dhmtStr.split(',');
+  const labels = ['D','H','M','T'];
+  const container = document.getElementById('dhmtDisplay');
+  container.innerHTML = parts.map((v, i) =>
+    `<span class="code-chip active">${labels[i] || i}:${v.trim()}</span>`
+  ).join('');
+}
+
+// =====================================================
+// DRAW TRAJECTORY ON CANVAS
+// Maps machine coordinates (mm) to canvas pixels.
+// X range: -500 to -300 mm (200 mm span)
+// Y range: -200 to -50 mm  (150 mm span)
+// Canvas: 300 × 260 px with 20px margin
+// =====================================================
+function drawTrajectory(points, upToIndex) {
+  const canvas = document.getElementById('trajectoryCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width;
+  const H = canvas.height;
+
+  // Define machine coordinate ranges with 10% padding
+  const xMin = -510, xMax = -300;  // mm
+  const yMin = -200, yMax = -40;   // mm (note: Y axis inverted)
+  const margin = 24;
+
+  const plotW = W - margin * 2;
+  const plotH = H - margin * 2 - 16; // extra 16 for axis labels at bottom
+
+  // Convert machine mm → canvas pixel
+  function toCanvasX(mmX) {
+    return margin + ((mmX - xMin) / (xMax - xMin)) * plotW;
+  }
+  function toCanvasY(mmY) {
+    // Invert Y: more negative machine Y → higher on canvas
+    return margin + 8 + ((mmY - yMax) / (yMin - yMax)) * plotH;
+  }
+
+  // Clear canvas with dark background
+  ctx.fillStyle = '#07090b';
+  ctx.fillRect(0, 0, W, H);
+
+  // Draw grid lines (light gray)
+  ctx.strokeStyle = '#1c2230';
+  ctx.lineWidth = 1;
+  // Vertical grid lines every 50 mm
+  for (let xMm = -500; xMm <= -300; xMm += 50) {
+    const cx = toCanvasX(xMm);
+    ctx.beginPath(); ctx.moveTo(cx, margin+8); ctx.lineTo(cx, margin+8+plotH);
+    ctx.stroke();
+  }
+  // Horizontal grid lines every 50 mm
+  for (let yMm = -200; yMm <= -50; yMm += 50) {
+    const cy = toCanvasY(yMm);
+    ctx.beginPath(); ctx.moveTo(margin, cy); ctx.lineTo(margin+plotW, cy);
+    ctx.stroke();
+  }
+
+  // Draw G54 work offset marker (cross at -448.69, -43.541)
+  const g54cx = toCanvasX(-448.69);
+  const g54cy = toCanvasY(-43.541);
+  ctx.strokeStyle = '#7a5500';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(g54cx-8,g54cy); ctx.lineTo(g54cx+8,g54cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(g54cx,g54cy-8); ctx.lineTo(g54cx,g54cy+8); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Draw axis labels (X bottom, Y left)
+  ctx.fillStyle = '#3a4a5a';
+  ctx.font = '8px "Share Tech Mono", monospace';
+  ctx.textAlign = 'center';
+  // X labels
+  for (let xMm = -500; xMm <= -300; xMm += 50) {
+    ctx.fillText(xMm, toCanvasX(xMm), H - 4);
+  }
+  // Y labels
+  ctx.textAlign = 'right';
+  for (let yMm = -200; yMm <= -50; yMm += 50) {
+    ctx.fillText(yMm, margin - 3, toCanvasY(yMm) + 3);
+  }
+
+  // Draw axis name labels
+  ctx.fillStyle = '#546e7a';
+  ctx.font = '9px "Share Tech Mono", monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('X (mm)', W/2, H - 0);
+  ctx.save();
+  ctx.translate(8, H/2);
+  ctx.rotate(-Math.PI/2);
+  ctx.fillText('Y (mm)', 0, 0);
+  ctx.restore();
+
+  if (!points || points.length === 0) return;
+
+  const n = Math.min(upToIndex, points.length);
+
+  // Draw full ghost path (dim gray) for context
+  ctx.strokeStyle = '#2a3a52';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([4,4]);
+  ctx.beginPath();
+  points.forEach((p, i) => {
+    const cx = toCanvasX(p.x), cy = toCanvasY(p.y);
+    i === 0 ? ctx.moveTo(cx, cy) : ctx.lineTo(cx, cy);
+  });
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Draw active path up to current index (cyan glow)
+  ctx.strokeStyle = '#00bcd4';
+  ctx.lineWidth = 2;
+  ctx.shadowColor = '#00bcd4';
+  ctx.shadowBlur = 4;
+  ctx.beginPath();
+  for (let i = 0; i < n; i++) {
+    const cx = toCanvasX(points[i].x), cy = toCanvasY(points[i].y);
+    i === 0 ? ctx.moveTo(cx, cy) : ctx.lineTo(cx, cy);
+  }
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // Draw small dots at each sample point (visited)
+  ctx.fillStyle = '#546e7a';
+  for (let i = 0; i < n - 1; i++) {
+    ctx.beginPath();
+    ctx.arc(toCanvasX(points[i].x), toCanvasY(points[i].y), 2, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  // Draw current position dot (cyan, larger, glowing)
+  if (n > 0) {
+    const last = points[n - 1];
+    const lx = toCanvasX(last.x), ly = toCanvasY(last.y);
+    ctx.fillStyle = '#00bcd4';
+    ctx.shadowColor = '#00bcd4';
+    ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.arc(lx, ly, 5, 0, Math.PI*2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Coordinate readout next to current point
+    ctx.fillStyle = '#00bcd4';
+    ctx.font = '8px "Share Tech Mono", monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(`(${last.x.toFixed(1)}, ${last.y.toFixed(1)})`, lx + 6, ly - 4);
+  }
+
+  // Draw G54 label
+  ctx.fillStyle = '#7a5500';
+  ctx.font = '8px "Share Tech Mono", monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText('G54', g54cx + 5, g54cy - 3);
+}
+
+// =====================================================
+// ANIMATED TRAJECTORY REPLAY
+// Steps through all 16 points at 300ms intervals
+// =====================================================
+function replayTrajectory() {
+  if (!trajectoryPoints.length) {
+    document.getElementById('statusMsg').textContent = 'Load samples first to replay trajectory.';
+    return;
+  }
+  stopReplay(); // clear any running replay
+  replayIndex = 0;
+  document.getElementById('statusMsg').textContent = 'Replaying tool path animation…';
+
+  replayTimer = setInterval(() => {
+    replayIndex++;
+    const total = trajectoryPoints.length;
+
+    // Draw trajectory up to current replay step
+    drawTrajectory(trajectoryPoints, replayIndex);
+
+    // Update progress bar and step counter
+    document.getElementById('replayFill').style.width = ((replayIndex / total) * 100) + '%';
+    document.getElementById('replayStep').textContent = replayIndex + '/' + total;
+
+    // Update axis position display with replay point
+    const pt = trajectoryPoints[replayIndex - 1];
+    updateAxis('x', pt.x, 0, -762);
+    updateAxis('y', pt.y, 0, -305);
+
+    if (replayIndex >= total) {
+      clearInterval(replayTimer);
+      replayTimer = null;
+      document.getElementById('statusMsg').textContent = 'Replay complete — ' + total + ' points shown.';
+    }
+  }, 300); // 300ms between steps for smooth visualization
+}
+
+// Stop any active replay
+function stopReplay() {
+  if (replayTimer) {
+    clearInterval(replayTimer);
+    replayTimer = null;
+  }
+}
+
+// =====================================================
+// LIVE MODE — polls MTConnect endpoint every 1 second
+// Endpoint: http://148.205.38.221:8082/current
+// Uses CORS proxy if direct access fails (educational)
+// =====================================================
+function toggleLive() {
+  const btn = document.getElementById('liveBtn');
+  if (liveMode) {
+    // Stop live mode
+    clearInterval(liveInterval);
+    liveInterval = null;
+    liveMode = false;
+    btn.classList.remove('active');
+    document.getElementById('statusMsg').textContent = 'Live feed stopped.';
+  } else {
+    // Start live mode: fetch /current endpoint every 1s
+    liveMode = true;
+    btn.classList.add('active');
+    document.getElementById('statusMsg').textContent = 'Live feed active — polling 148.205.38.221:8082/current…';
+    fetchLive(); // immediate first fetch
+    liveInterval = setInterval(fetchLive, 1000);
+  }
+}
+
+// Fetch live /current XML and parse it
+async function fetchLive() {
+  try {
+    const resp = await fetch('http://148.205.38.221:8082/current', {
+      mode: 'cors',
+      signal: AbortSignal.timeout(2000)
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const text = await resp.text();
+    // Parse and update using same logic as loadCurrent
+    applyLiveXML(text);
+    document.getElementById('data-source-tag').textContent =
+      '/current · LIVE · ' + new Date().toISOString().slice(11,19) + 'Z';
+  } catch (err) {
+    // Network error: likely CORS or unreachable from browser
+    document.getElementById('statusMsg').textContent =
+      'Live: ' + err.message + ' — CORS may block browser-direct access';
+  }
+}
+
+// Apply live XML (same parsing as loadCurrent but uses live string)
+function applyLiveXML(xmlString) {
+  // Reuse loadCurrent logic with injected string
+  const origCurrent = window._CURRENT_OVERRIDE;
+  window._CURRENT_OVERRIDE = xmlString;
+  loadCurrentFromString(xmlString);
+  window._CURRENT_OVERRIDE = origCurrent;
+}
+
+// Variant of loadCurrent that accepts an XML string param
+function loadCurrentFromString(xmlString) {
+  const doc = parseXML(xmlString);
+  if (!doc) return;
+
+  // Apply same logic as loadCurrent() — abbreviated (same parsing)
+  const runEl = getByItemId(doc, 'rstat');
+  if (runEl) setRunStatus(val(runEl));
+
+  const speedEl = getLastByItemId(doc, 'sspeed');
+  if (speedEl) updateSpindleGauge(parseFloat(speedEl.textContent));
+
+  const xEl = getLastByItemId(doc, 'x_axis_actual_position');
+  const yEl = getLastByItemId(doc, 'y_axis_actual_position');
+  const zEl = getLastByItemId(doc, 'z_axis_actual_position');
+  if (xEl) updateAxis('x', parseFloat(xEl.textContent), 0, -762);
+  if (yEl) updateAxis('y', parseFloat(yEl.textContent), 0, -305);
+  if (zEl) updateAxis('z', parseFloat(zEl.textContent), 118.69, -405.05);
+
+  const m1El = getLastByItemId(doc, 'm30c1');
+  const m2El = getLastByItemId(doc, 'm30c2');
+  if (m1El) updateCounters(parseInt(m1El.textContent), m2El ? parseInt(m2El.textContent) : null, null);
+
+  const alarmEl = getByItemId(doc, 'aalarms');
+  if (alarmEl) setAlarms(val(alarmEl));
+}
+
+// =====================================================
+// INITIALIZATION — draw empty canvas on page load
+// =====================================================
+window.addEventListener('load', () => {
+  // Draw empty placeholder canvas
+  drawTrajectory([], 0);
+});
+</script>
+</body>
+</html>
