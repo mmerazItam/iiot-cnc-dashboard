@@ -90,11 +90,18 @@ export default function TrajectoryReplay({
         return;
       }
 
+      // Stop replay at the first alarm point to simulate trajectory freezing
+      if (trajectory[nextIndex]?.alarm === true) {
+        setIsPlaying(false);
+        updateStep(activeIndex, "play-stopped-at-alarm");
+        return;
+      }
+
       updateStep(nextIndex, "play-step");
     }, selectedSpeed);
 
     return () => window.clearInterval(intervalId);
-  }, [activeIndex, isPlaying, onReplayEvent, selectedSpeed, totalSteps]);
+  }, [activeIndex, isPlaying, onReplayEvent, selectedSpeed, totalSteps, trajectory]);
 
   const progress = totalSteps > 1 ? (activeIndex / (totalSteps - 1)) * 100 : 0;
 

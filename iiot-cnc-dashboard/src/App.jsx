@@ -73,6 +73,8 @@ function getDisplayData(activeData, currentData, replayIndex = 0) {
       spindleSpeed: replayPoint?.spindleSpeed ?? activeData.spindleSpeed,
       latestSpindleSpeed: replayPoint?.spindleSpeed ?? activeData.latestSpindleSpeed,
       feedrateOverride: replayPoint?.feedrateOverride ?? activeData.feedrateOverride,
+      spindleSpeedOverride: replayPoint?.spindleSpeedOverride ?? activeData.spindleSpeedOverride ?? 100,
+      rapidOverride: replayPoint?.rapidOverride ?? activeData.rapidOverride ?? 100,
       m30Counter1: activeData.m30Counter1,
       m30Counter2: activeData.m30Counter2,
       latestM30Counter1: activeData.latestM30Counter1,
@@ -357,6 +359,48 @@ export default function App() {
         expected: "Step 11 onward has FeedrateOverride = 0",
         actual: feedrateStopped ? "0% from Step 11 onward" : "Feedrate still active",
         result: feedrateStopped ? "Pass" : "Fail",
+      },
+      {
+        id: "T-21",
+        description: "Normal motion keeps overrides at 100%",
+        expected: "FeedrateOverride = 100%, SpindleSpeedOverride = 100%, RapidOverride = 100%, SpindleSpeed > 0",
+        actual: `Feedrate: ${alarmPath[0]?.feedrateOverride}%, Spindle: ${alarmPath[0]?.spindleSpeedOverride}%, Rapid: ${alarmPath[0]?.rapidOverride}%, Speed: ${alarmPath[0]?.spindleSpeed} rpm`,
+        result: alarmPath[0]?.feedrateOverride === 100 && alarmPath[0]?.spindleSpeedOverride === 100 && alarmPath[0]?.rapidOverride === 100 && alarmPath[0]?.spindleSpeed > 0 ? "Pass" : "Fail",
+      },
+      {
+        id: "T-22",
+        description: "Warning reduces FeedrateOverride only",
+        expected: "FeedrateOverride < 100%, SpindleSpeedOverride = 100%, RapidOverride = 100%, MachineCondition = Warning",
+        actual: `Feedrate: ${alarmPath[8]?.feedrateOverride}%, Spindle: ${alarmPath[8]?.spindleSpeedOverride}%, Rapid: ${alarmPath[8]?.rapidOverride}%, Condition: ${alarmPath[8]?.machineCondition}`,
+        result: alarmPath[8]?.feedrateOverride < 100 && alarmPath[8]?.spindleSpeedOverride === 100 && alarmPath[8]?.rapidOverride === 100 && alarmPath[8]?.machineCondition === "Warning" ? "Pass" : "Fail",
+      },
+      {
+        id: "T-23",
+        description: "Alarm stops real spindle but keeps spindle override unchanged",
+        expected: "SpindleSpeed = 0, SpindleSpeedOverride = 100%, ActiveAlarms != NO ACTIVE ALARMS",
+        actual: `Speed: ${alarmPath[10]?.spindleSpeed} rpm, Override: ${alarmPath[10]?.spindleSpeedOverride}%, Alarms: ${alarmPath[10]?.activeAlarms}`,
+        result: alarmPath[10]?.spindleSpeed === 0 && alarmPath[10]?.spindleSpeedOverride === 100 && alarmPath[10]?.activeAlarms !== "NO ACTIVE ALARMS" ? "Pass" : "Fail",
+      },
+      {
+        id: "T-24",
+        description: "Alarm stops feed but keeps rapid override unchanged",
+        expected: "FeedrateOverride = 0%, RapidOverride = 100%",
+        actual: `Feedrate: ${alarmPath[10]?.feedrateOverride}%, Rapid: ${alarmPath[10]?.rapidOverride}%`,
+        result: alarmPath[10]?.feedrateOverride === 0 && alarmPath[10]?.rapidOverride === 100 ? "Pass" : "Fail",
+      },
+      {
+        id: "T-25",
+        description: "RapidOverride does not imply motion",
+        expected: "If ActiveAlarms is active and RapidOverride = 100%, dashboard still shows alarm/red and frozen trajectory",
+        actual: `Alarms: ${alarmPath[10]?.activeAlarms}, Rapid: ${alarmPath[10]?.rapidOverride}%, Condition: ${alarmPath[10]?.machineCondition}`,
+        result: alarmPath[10]?.activeAlarms !== "NO ACTIVE ALARMS" && alarmPath[10]?.rapidOverride === 100 && alarmPath[10]?.machineCondition === "Fault" ? "Pass" : "Fail",
+      },
+      {
+        id: "T-26",
+        description: "Alarm priority overrides active-like values",
+        expected: "If SpindleSpeedOverride = 100% and RapidOverride = 100% but MachineCondition = Fault, dashboard state is red/alarm",
+        actual: `Spindle Override: ${alarmPath[10]?.spindleSpeedOverride}%, Rapid: ${alarmPath[10]?.rapidOverride}%, Condition: ${alarmPath[10]?.machineCondition}, State: ${stateForPoint(10).status}`,
+        result: alarmPath[10]?.spindleSpeedOverride === 100 && alarmPath[10]?.rapidOverride === 100 && alarmPath[10]?.machineCondition === "Fault" && stateForPoint(10).status === "alarm" ? "Pass" : "Fail",
       },
     ];
   }, []);
@@ -653,12 +697,14 @@ export default function App() {
               label="SpindleSpeedOverride"
               value={formatNumber(displayData?.spindleSpeedOverride, 0)}
               unit="%"
+              note={displayData?.currentAlarm && displayData?.spindleSpeed === 0 ? "Override unchanged; spindle stopped by fault." : null}
               status={displayData?.spindleSpeedOverride === null ? "Nan" : "ok"}
             />
             <MetricCard
               label="RapidOverride"
               value={formatNumber(displayData?.rapidOverride, 0)}
               unit="%"
+              note={displayData?.currentAlarm && displayData?.feedrateOverride === 0 ? "Rapid override unchanged; motion stopped by fault." : null}
               status={displayData?.rapidOverride === null ? "Nan" : "ok"}
             />
           </div>
