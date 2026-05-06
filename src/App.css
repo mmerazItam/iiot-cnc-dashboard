@@ -454,6 +454,22 @@ h2 {
   overflow-wrap: anywhere;
 }
 
+.replay-readout .replay-warning {
+  border-color: rgba(245, 158, 11, 0.42);
+}
+
+.replay-readout .replay-warning dd {
+  color: #fde68a;
+}
+
+.replay-readout .replay-alarm {
+  border-color: rgba(239, 68, 68, 0.55);
+}
+
+.replay-readout .replay-alarm dd {
+  color: #fecaca;
+}
+
 .replay-progress {
   background: #111827;
   border: 1px solid rgba(148, 163, 184, 0.18);
@@ -938,6 +954,12 @@ td {
     padding-top: 7px;
   }
 
+  .moving-alarm-block {
+    border-top: 1px solid rgba(148, 163, 184, 0.14);
+    margin-top: 8px;
+    padding-top: 7px;
+  }
+
   .scenario-tests-heading {
     margin-bottom: 5px;
   }
@@ -950,6 +972,10 @@ td {
     max-height: 150px;
   }
 
+  .moving-alarm-table-wrap {
+    max-height: 170px;
+  }
+
   .scenario-tests-table th,
   .scenario-tests-table td {
     width: calc(100% / 6);
@@ -957,6 +983,11 @@ td {
 
   .replay-tests-table th,
   .replay-tests-table td {
+    width: 20%;
+  }
+
+  .moving-alarm-tests-table th,
+  .moving-alarm-tests-table td {
     width: 20%;
   }
 

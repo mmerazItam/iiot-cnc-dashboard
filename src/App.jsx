@@ -27,6 +27,10 @@ import {
 } from "./utils/formatters.js";
 import { parseCurrentXml, parseSamplesXml, safeValue } from "./utils/xmlParsers.js";
 
+function isScenarioData(data) {
+  return data?.source === "scenario" || data?.source?.startsWith("synthetic");
+}
+
 function getNearestSeriesValue(series = [], timestamp, index) {
   if (!series.length) return null;
 
@@ -54,20 +58,36 @@ function getNearestSeriesValue(series = [], timestamp, index) {
 function getDisplayData(activeData, currentData, replayIndex = 0) {
   if (!activeData) return null;
 
-  if (activeData.source === "current" || activeData.source === "scenario") {
+  if (activeData.source === "current" || isScenarioData(activeData)) {
     const replayPoint = activeData.trajectory?.[replayIndex];
 
+    // Synthetic replay points can carry machine-state metadata. At each replay
+    // step, the current point becomes the operator-facing machine state so
+    // warning/alarm transitions are visible in the normal dashboard widgets.
     return {
       ...activeData,
-      spindleSpeed: activeData.spindleSpeed,
+      runStatus: replayPoint?.runStatus ?? activeData.runStatus,
+      machineCondition: replayPoint?.machineCondition ?? activeData.machineCondition,
+      activeAlarms: replayPoint?.activeAlarms ?? activeData.activeAlarms,
+      emergencyStop: replayPoint?.emergencyStop ?? activeData.emergencyStop,
+      spindleSpeed: replayPoint?.spindleSpeed ?? activeData.spindleSpeed,
+      latestSpindleSpeed: replayPoint?.spindleSpeed ?? activeData.latestSpindleSpeed,
+      feedrateOverride: replayPoint?.feedrateOverride ?? activeData.feedrateOverride,
       m30Counter1: activeData.m30Counter1,
       m30Counter2: activeData.m30Counter2,
+      latestM30Counter1: activeData.latestM30Counter1,
+      latestM30Counter2: activeData.latestM30Counter2,
       machineRunTime: activeData.machineRunTime,
       spindleTime: activeData.spindleTime,
-      gcodes: activeData.gcodes,
+      gcodes: replayPoint?.gcode ? [replayPoint.gcode] : activeData.gcodes,
       xPosition: replayPoint?.x ?? activeData.xPosition,
       yPosition: replayPoint?.y ?? activeData.yPosition,
+      latestX: replayPoint?.x ?? activeData.latestX,
+      latestY: replayPoint?.y ?? activeData.latestY,
       zPosition: activeData.zPosition,
+      latestZ: activeData.latestZ,
+      currentWarning: replayPoint?.warning ?? null,
+      currentAlarm: Boolean(replayPoint?.alarm),
     };
   }
 
@@ -175,7 +195,7 @@ export default function App() {
   const trajectory =
     activeData?.source === "samples"
       ? sampleData?.trajectory || []
-      : activeData?.source === "scenario"
+      : isScenarioData(activeData)
         ? activeData.trajectory || []
         : [];
 
@@ -186,12 +206,12 @@ export default function App() {
 
   const zNote = useMemo(() => {
     const missingScenarioZ =
-      activeData?.source === "scenario" && activeData?.missingZInSampleWindow;
+      isScenarioData(activeData) && activeData?.missingZInSampleWindow;
     const missingSampleZ = activeData?.source === "samples" && !Number.isFinite(sampleData?.latestZ);
 
     if (!missingScenarioZ && !missingSampleZ) return null;
 
-    const currentZ = activeData?.source === "scenario" ? activeData?.zPosition : currentData?.zPosition;
+    const currentZ = isScenarioData(activeData) ? activeData?.zPosition : currentData?.zPosition;
     if (Number.isFinite(currentZ) && !missingScenarioZ) {
       return `UNAVAILABLE in sample window | Last known from current: ${formatPosition(
         currentZ
@@ -272,6 +292,74 @@ export default function App() {
       },
     ];
   }, [replayEvents, replayIndex, trajectory.length]);
+
+  const movingAlarmTests = useMemo(() => {
+    const scenario = getScenarioById("MOVING_ALARM_SERVO_OVERLOAD");
+    const alarmPath = scenario?.data.trajectory || [];
+    const stateForPoint = (index) =>
+      getMachineState({
+        ...scenario?.data,
+        ...alarmPath[index],
+        availability: scenario?.data.availability,
+        spindleSpeed: alarmPath[index]?.spindleSpeed,
+      });
+    const freezePoints = alarmPath.slice(10, 13);
+    const frozen =
+      freezePoints.length === 3 &&
+      freezePoints.every(
+        (point) => point.x === freezePoints[0].x && point.y === freezePoints[0].y
+      );
+    const spindleStopped = freezePoints.every((point) => point.spindleSpeed === 0);
+    const feedrateStopped = freezePoints.every((point) => point.feedrateOverride === 0);
+
+    return [
+      {
+        id: "T-15",
+        description: "Moving alarm scenario starts active",
+        expected: "Step 1 maps to active / green",
+        actual: stateForPoint(0).status,
+        result: stateForPoint(0).status === "active" ? "Pass" : "Fail",
+      },
+      {
+        id: "T-16",
+        description: "Moving alarm scenario enters warning",
+        expected: "Step 9 or 10 maps to warning / yellow-orange",
+        actual: `${stateForPoint(8).status}, ${stateForPoint(9).status}`,
+        result:
+          stateForPoint(8).status === "warning" && stateForPoint(9).status === "warning"
+            ? "Pass"
+            : "Fail",
+      },
+      {
+        id: "T-17",
+        description: "Moving alarm scenario triggers servo overload",
+        expected: "Step 11 maps to alarm / red",
+        actual: stateForPoint(10).status,
+        result: stateForPoint(10).status === "alarm" ? "Pass" : "Fail",
+      },
+      {
+        id: "T-18",
+        description: "Motion freezes after alarm",
+        expected: "Steps 11, 12 and 13 have identical X/Y positions",
+        actual: frozen ? "Frozen at alarm point" : "Position changed",
+        result: frozen ? "Pass" : "Fail",
+      },
+      {
+        id: "T-19",
+        description: "Spindle stops after alarm",
+        expected: "Step 11 onward has SpindleSpeed = 0",
+        actual: spindleStopped ? "0 rpm from Step 11 onward" : "Spindle still running",
+        result: spindleStopped ? "Pass" : "Fail",
+      },
+      {
+        id: "T-20",
+        description: "Feedrate drops after alarm",
+        expected: "Step 11 onward has FeedrateOverride = 0",
+        actual: feedrateStopped ? "0% from Step 11 onward" : "Feedrate still active",
+        result: feedrateStopped ? "Pass" : "Fail",
+      },
+    ];
+  }, []);
 
   const tests = useMemo(() => {
     const invalidResult = parseCurrentXml(INVALID_XML);
@@ -474,6 +562,9 @@ export default function App() {
             { label: "ActiveAlarms", value: displayData?.activeAlarms },
             { label: "EmergencyStop", value: displayData?.emergencyStop },
             { label: "Availability", value: displayData?.availability },
+            ...(displayData?.currentWarning
+              ? [{ label: "Warning", value: displayData.currentWarning }]
+              : []),
           ]}
         />
 
@@ -585,7 +676,7 @@ export default function App() {
           <TrajectoryReplay
             trajectory={trajectory}
             currentIndex={replayIndex}
-            currentGcode={gcodeTags[0]}
+            currentGcode={replayPoint?.gcode ?? gcodeTags[0]}
             onStepChange={handleReplayStepChange}
           />
         </div>
@@ -653,7 +744,12 @@ export default function App() {
         <div className="coolant-panel">
           <TagList title="Coolant States" tags={coolantTags} />
         </div>
-        <TestPanel tests={tests} scenarioTests={scenarioTests} replayTests={replayTests} />
+        <TestPanel
+          tests={tests}
+          scenarioTests={scenarioTests}
+          replayTests={replayTests}
+          movingAlarmTests={movingAlarmTests}
+        />
       </section>
     </main>
   );

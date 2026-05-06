@@ -166,6 +166,18 @@ export default function TrajectoryReplay({
             <dd>{currentGcode}</dd>
           </div>
         ) : null}
+        {currentPoint?.warning ? (
+          <div className="replay-warning">
+            <dt>Warning</dt>
+            <dd>{currentPoint.warning}</dd>
+          </div>
+        ) : null}
+        {currentPoint?.alarm ? (
+          <div className="replay-alarm">
+            <dt>Alarm</dt>
+            <dd>{currentPoint.activeAlarms ?? "ACTIVE ALARM"}</dd>
+          </div>
+        ) : null}
       </dl>
 
       <div className="replay-progress" aria-label="Replay progress">

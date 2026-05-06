@@ -120,7 +120,7 @@ export default function TrajectoryCanvas({
       const py = mapY(point.y);
       ctx.beginPath();
       ctx.arc(px, py, 2.6, 0, Math.PI * 2);
-      ctx.fillStyle = "#94a3b8";
+      ctx.fillStyle = point.alarm ? "#ef4444" : point.warning ? "#f59e0b" : "#94a3b8";
       ctx.fill();
     });
 
@@ -132,14 +132,29 @@ export default function TrajectoryCanvas({
     ctx.fillText("Start", mapX(start.x) + 7, mapY(start.y) - 7);
     ctx.fillText("Final", mapX(final.x) + 7, mapY(final.y) + 13);
 
+    const currentX = mapX(current.x);
+    const currentY = mapY(current.y);
+    const currentIsAlarm = Boolean(current.alarm);
+    const currentIsWarning = Boolean(current.warning);
+
     ctx.beginPath();
-    // The cyan dot is the current replay cursor. It advances as App updates
-    // currentIndex from TrajectoryReplay controls.
-    ctx.arc(mapX(current.x), mapY(current.y), 6, 0, Math.PI * 2);
-    ctx.fillStyle = "#22d3ee";
+    // The replay cursor is normally cyan. Warning and alarm points keep the
+    // same currentIndex behavior, but change color so the operator can see the
+    // state transition directly on the tool path.
+    ctx.arc(currentX, currentY, 6, 0, Math.PI * 2);
+    ctx.fillStyle = currentIsAlarm ? "#ef4444" : currentIsWarning ? "#f59e0b" : "#22d3ee";
     ctx.fill();
-    ctx.fillStyle = "#e0faff";
-    ctx.fillText("Tool", mapX(current.x) + 9, mapY(current.y) + 4);
+
+    if (currentIsAlarm || currentIsWarning) {
+      ctx.beginPath();
+      ctx.arc(currentX, currentY, currentIsAlarm ? 11 : 9, 0, Math.PI * 2);
+      ctx.strokeStyle = currentIsAlarm ? "#fecaca" : "#fde68a";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    ctx.fillStyle = currentIsAlarm ? "#fecaca" : currentIsWarning ? "#fde68a" : "#e0faff";
+    ctx.fillText(currentIsAlarm ? "ALARM" : currentIsWarning ? "WARN" : "Tool", currentX + 9, currentY + 4);
   }, [currentIndex, showFullPath, trajectory, width, height]);
 
   return (
