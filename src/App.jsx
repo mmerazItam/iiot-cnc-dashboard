@@ -8,8 +8,14 @@ import TagList from "./components/TagList.jsx";
 import TrajectoryCanvas from "./components/TrajectoryCanvas.jsx";
 import AxisPanel from "./components/AxisPanel.jsx";
 import TestPanel from "./components/TestPanel.jsx";
+import ScenarioSelector from "./components/ScenarioSelector.jsx";
 import { INVALID_XML, TRACE_CURRENT_XML, TRACE_SAMPLES_XML } from "./data/mtconnectXml.js";
-import { getCycleStatus, getMachineState, getSpindleStatus } from "./utils/alarmLogic.js";
+import { getScenarioById, testScenarios } from "./data/testScenarios.js";
+import {
+  getCycleStatus,
+  getMachineState,
+  getSpindleStatus,
+} from "./utils/alarmLogic.js";
 import {
   estimatePartsPerHour,
   formatNumber,
@@ -23,7 +29,7 @@ import { parseCurrentXml, parseSamplesXml, safeValue } from "./utils/xmlParsers.
 function getDisplayData(activeData, currentData) {
   if (!activeData) return null;
 
-  if (activeData.source === "current") {
+  if (activeData.source === "current" || activeData.source === "scenario") {
     return {
       ...activeData,
       spindleSpeed: activeData.spindleSpeed,
@@ -119,14 +125,22 @@ export default function App() {
     );
   }, [displayData]);
 
-  const trajectory = activeData?.source === "samples" ? sampleData?.trajectory || [] : [];
+  const trajectory =
+    activeData?.source === "samples"
+      ? sampleData?.trajectory || []
+      : activeData?.source === "scenario"
+        ? activeData.trajectory || []
+        : [];
 
   const zNote = useMemo(() => {
-    if (activeData?.source !== "samples") return null;
-    if (Number.isFinite(sampleData?.latestZ)) return null;
+    const missingScenarioZ =
+      activeData?.source === "scenario" && activeData?.missingZInSampleWindow;
+    const missingSampleZ = activeData?.source === "samples" && !Number.isFinite(sampleData?.latestZ);
 
-    const currentZ = currentData?.zPosition;
-    if (Number.isFinite(currentZ)) {
+    if (!missingScenarioZ && !missingSampleZ) return null;
+
+    const currentZ = activeData?.source === "scenario" ? activeData?.zPosition : currentData?.zPosition;
+    if (Number.isFinite(currentZ) && !missingScenarioZ) {
       return `UNAVAILABLE in sample window | Last known from current: ${formatPosition(
         currentZ
       )}`;
@@ -134,6 +148,35 @@ export default function App() {
 
     return "UNAVAILABLE in sample window";
   }, [activeData, sampleData, currentData]);
+
+  const scenarioTests = useMemo(() => {
+    return testScenarios.map((scenario) => {
+      const state = getMachineState(scenario.data);
+      const cycle = getCycleStatus(scenario.data.thisCycle, scenario.data.lastCycle);
+      const stateMatches = state.status === scenario.expectedState;
+      const cycleMatches =
+        scenario.id !== "SLOW_CYCLE_WARNING" || cycle.status === "delayed";
+      const missingZMatches =
+        scenario.id !== "MISSING_Z_SAMPLE" ||
+        (scenario.data.missingZInSampleWindow && scenario.data.zPosition === null);
+      const unavailableMatches =
+        scenario.id !== "UNAVAILABLE_STREAM" ||
+        (scenario.data.spindleSpeed === null && scenario.data.trajectory.length === 0);
+
+      return {
+        id: scenario.id,
+        name: scenario.title,
+        expectedState: scenario.expectedState,
+        expectedColor: scenario.expectedColor,
+        criticalBehavior: scenario.expectedWarnings.join(" "),
+        actualState: state.status,
+        result:
+          stateMatches && cycleMatches && missingZMatches && unavailableMatches
+            ? "Pass"
+            : "Fail",
+      };
+    });
+  }, []);
 
   const tests = useMemo(() => {
     const invalidResult = parseCurrentXml(INVALID_XML);
@@ -255,6 +298,18 @@ export default function App() {
     setError(null);
   }
 
+  function handleLoadScenario(id) {
+    const scenario = getScenarioById(id);
+    if (!scenario) {
+      setError(`Unknown test scenario: ${id}`);
+      return;
+    }
+
+    setActiveData(scenario.data);
+    setLastSource(`scenario:${scenario.id}`);
+    setError(null);
+  }
+
   function handleReset() {
     setCurrentData(null);
     setSampleData(null);
@@ -271,6 +326,7 @@ export default function App() {
         onLoadSamples={handleLoadSamples}
         onReset={handleReset}
       />
+      <ScenarioSelector onLoadScenario={handleLoadScenario} />
 
       {error ? <div className="error-banner">XML parse error: {error}</div> : null}
 
@@ -445,7 +501,7 @@ export default function App() {
         <div className="coolant-panel">
           <TagList title="Coolant States" tags={coolantTags} />
         </div>
-        <TestPanel tests={tests} />
+        <TestPanel tests={tests} scenarioTests={scenarioTests} />
       </section>
     </main>
   );

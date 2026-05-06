@@ -109,6 +109,39 @@ h2 {
   margin-bottom: 18px;
 }
 
+.scenario-selector {
+  align-items: center;
+  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 8px;
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: auto minmax(220px, 320px) auto minmax(0, 1fr);
+  margin-bottom: 16px;
+  padding: 0.75rem;
+}
+
+.scenario-selector label {
+  color: #9fb0c7;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.scenario-selector select {
+  background: #0b1220;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  color: #f8fafc;
+  min-height: 40px;
+  padding: 0 0.75rem;
+}
+
+.scenario-selector span {
+  color: #9fb0c7;
+  font-size: 0.82rem;
+  overflow-wrap: anywhere;
+}
+
 .error-banner {
   background: rgba(239, 68, 68, 0.16);
   border: 1px solid rgba(239, 68, 68, 0.5);
@@ -481,7 +514,7 @@ td {
     display: grid;
     gap: 8px;
     grid-template-columns: 1.02fr 1.08fr 1.24fr 0.92fr;
-    grid-template-rows: 124px 104px minmax(258px, 1fr) 156px;
+    grid-template-rows: 124px 104px minmax(258px, 1fr) 300px;
     grid-template-areas:
       "status cycle production gauge"
       "status process gcodes coolant"
@@ -540,6 +573,24 @@ td {
 
   .test-panel {
     grid-area: test;
+  }
+
+  .scenario-selector {
+    gap: 0.45rem;
+    grid-template-columns: auto minmax(180px, 260px) auto minmax(0, 1fr);
+    margin-bottom: 8px;
+    padding: 0.45rem;
+  }
+
+  .scenario-selector label,
+  .scenario-selector span {
+    font-size: 0.68rem;
+  }
+
+  .scenario-selector select {
+    border-radius: 7px;
+    font-size: 0.76rem;
+    min-height: 34px;
   }
 
   .card {
@@ -727,8 +778,22 @@ td {
   }
 
   .table-wrap {
-    height: calc(100% - 24px);
+    max-height: 116px;
     overflow: auto;
+  }
+
+  .scenario-tests-block {
+    border-top: 1px solid rgba(148, 163, 184, 0.14);
+    margin-top: 8px;
+    padding-top: 7px;
+  }
+
+  .scenario-tests-heading {
+    margin-bottom: 5px;
+  }
+
+  .scenario-table-wrap {
+    max-height: 122px;
   }
 
   table {
@@ -754,7 +819,7 @@ td {
   }
 
   .test-panel {
-    min-height: 156px;
+    min-height: 300px;
   }
 }
 
@@ -804,6 +869,10 @@ td {
   }
 
   .status-row {
+    grid-template-columns: 1fr;
+  }
+
+  .scenario-selector {
     grid-template-columns: 1fr;
   }
 }
