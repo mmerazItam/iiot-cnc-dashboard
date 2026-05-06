@@ -3,7 +3,13 @@ import { useEffect, useRef } from "react";
 const X_RANGE = [-500, -300];
 const Y_RANGE = [-200, -50];
 
-export default function TrajectoryCanvas({ trajectory, width = 300, height = 300 }) {
+export default function TrajectoryCanvas({
+  trajectory,
+  currentIndex,
+  showFullPath = true,
+  width = 300,
+  height = 300,
+}) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -81,36 +87,75 @@ export default function TrajectoryCanvas({ trajectory, width = 300, height = 300
       return plotBottom - normalized * plotSize;
     };
 
-    ctx.beginPath();
-    points.forEach((point, index) => {
-      const px = mapX(point.x);
-      const py = mapY(point.y);
-      if (index === 0) ctx.moveTo(px, py);
-      else ctx.lineTo(px, py);
-    });
-    ctx.strokeStyle = "#cbd5e1";
-    ctx.lineWidth = 2;
-    ctx.stroke();
+    const drawPath = (pathPoints, strokeStyle, lineWidth) => {
+      if (pathPoints.length < 2) return;
+
+      ctx.beginPath();
+      pathPoints.forEach((point, index) => {
+        const px = mapX(point.x);
+        const py = mapY(point.y);
+        if (index === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      });
+      ctx.strokeStyle = strokeStyle;
+      ctx.lineWidth = lineWidth;
+      ctx.stroke();
+    };
+
+    if (showFullPath) {
+      drawPath(points, "#8b98aa", 1.5);
+    }
+
+    const activeIndex = Number.isInteger(currentIndex)
+      ? Math.min(Math.max(currentIndex, 0), points.length - 1)
+      : points.length - 1;
+    const completedPath = points.slice(0, activeIndex + 1);
+
+    // The completed path is a derived slice; it does not mutate the original
+    // MTConnect trajectory array.
+    drawPath(completedPath, "#38bdf8", 2.6);
 
     points.forEach((point) => {
+      const px = mapX(point.x);
+      const py = mapY(point.y);
       ctx.beginPath();
-      ctx.arc(mapX(point.x), mapY(point.y), 3, 0, Math.PI * 2);
-      ctx.fillStyle = "#94a3b8";
+      ctx.arc(px, py, 2.6, 0, Math.PI * 2);
+      ctx.fillStyle = point.alarm ? "#ef4444" : point.warning ? "#f59e0b" : "#94a3b8";
       ctx.fill();
     });
 
     const start = points[0];
-    const latest = points.at(-1);
+    const final = points.at(-1);
+    const current = points[activeIndex];
 
     ctx.fillStyle = "#f8fafc";
     ctx.fillText("Start", mapX(start.x) + 7, mapY(start.y) - 7);
+    ctx.fillText("Final", mapX(final.x) + 7, mapY(final.y) + 13);
+
+    const currentX = mapX(current.x);
+    const currentY = mapY(current.y);
+    const currentIsAlarm = Boolean(current.alarm);
+    const currentIsWarning = Boolean(current.warning);
 
     ctx.beginPath();
-    ctx.arc(mapX(latest.x), mapY(latest.y), 6, 0, Math.PI * 2);
-    ctx.fillStyle = "#22d3ee";
+    // The replay cursor is normally cyan. Warning and alarm points keep the
+    // same currentIndex behavior, but change color so the operator can see the
+    // state transition directly on the tool path.
+    ctx.arc(currentX, currentY, 6, 0, Math.PI * 2);
+    ctx.fillStyle = currentIsAlarm ? "#ef4444" : currentIsWarning ? "#f59e0b" : "#22d3ee";
     ctx.fill();
-    ctx.fillText("Latest", mapX(latest.x) + 9, mapY(latest.y) + 4);
-  }, [trajectory, width, height]);
+
+    if (currentIsAlarm || currentIsWarning) {
+      ctx.beginPath();
+      ctx.arc(currentX, currentY, currentIsAlarm ? 11 : 9, 0, Math.PI * 2);
+      ctx.strokeStyle = currentIsAlarm ? "#fecaca" : "#fde68a";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    ctx.fillStyle = currentIsAlarm ? "#fecaca" : currentIsWarning ? "#fde68a" : "#e0faff";
+    ctx.fillText(currentIsAlarm ? "ALARM" : currentIsWarning ? "WARN" : "Tool", currentX + 9, currentY + 4);
+  }, [currentIndex, showFullPath, trajectory, width, height]);
 
   return (
     <section className="card trajectory-card">

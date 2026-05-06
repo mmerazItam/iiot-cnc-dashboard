@@ -997,3 +997,134 @@ Important:
 - Do not assume missing Z is 0.
 - Keep all units visible in the dashboard.
 - Keep the UI text in English."
+
+## Prompt 6
+Model: Codex GPT 5.5
+Prompt:
+"Actúa como desarrollador frontend senior especializado en React JS, HTML5 Canvas y visualización de trayectorias CNC.
+
+Estoy trabajando en una aplicación React JS para un dashboard IIoT de una máquina CNC Haas TM-1P. La app ya tiene:
+
+- Parser de XML MTConnect
+- Dashboard con widgets de estado
+- SpindleSpeed
+- ThisCycle
+- M30Counter
+- X/Y/Z positions
+- Gcodes
+- TrajectoryCanvas
+- Botón Load Samples
+
+Necesito agregar una función para visualizar el avance paso a paso de la máquina sobre la trayectoria X/Y. Esta función pertenece a la fase de testing/validación del dashboard.
+
+Objetivo:
+Agregar una simulación tipo "replay" para ver cómo avanza la herramienta CNC punto por punto en el canvas.
+
+La app ya cuenta con una trayectoria real de 16 puntos:
+
+trajectory = [
+  { timestamp: "2023-05-10T17:40:54.240Z", x: -404.4854174874717, y: -77.65658375378014 },
+  { timestamp: "2023-05-10T17:40:55.240Z", x: -435.2871183230719, y: -90.92195330019393 },
+  { timestamp: "2023-05-10T17:40:56.241Z", x: -450.7776610008905, y: -120.66684320433791 },
+  { timestamp: "2023-05-10T17:40:57.245Z", x: -443.5137453018194, y: -154.27405999653655 },
+  { timestamp: "2023-05-10T17:40:58.245Z", x: -417.1216316119471, y: -174.96636805098746 },
+  { timestamp: "2023-05-10T17:40:59.245Z", x: -384.3609571853078, y: -174.61041604946604 },
+  { timestamp: "2023-05-10T17:41:00.245Z", x: -358.42467635119795, y: -153.34954384790066 },
+  { timestamp: "2023-05-10T17:41:01.246Z", x: -351.8926944952184, y: -119.5924287326652 },
+  { timestamp: "2023-05-10T17:41:02.246Z", x: -367.35880861432776, y: -90.79527635938997 },
+  { timestamp: "2023-05-10T17:41:03.246Z", x: -399.1085442045309, y: -77.59816195478504 },
+  { timestamp: "2023-05-10T17:41:04.247Z", x: -401.2545370398237, y: -103.28442417651289 },
+  { timestamp: "2023-05-10T17:41:05.246Z", x: -399.19756201879005, y: -123.58874856278914 },
+  { timestamp: "2023-05-10T17:41:06.246Z", x: -396.10741504422543, y: -90.1946421133429 },
+  { timestamp: "2023-05-10T17:41:07.247Z", x: -420.0475502060887, y: -81.21831932489378 },
+  { timestamp: "2023-05-10T17:41:08.246Z", x: -445.097922192882, y: -103.51617119143029 },
+  { timestamp: "2023-05-10T17:41:09.246Z", x: -450.61953104237574, y: -119.611996479481 }
+]
+
+Requirements:
+
+1. Create or update a component:
+   src/components/TrajectoryReplay.jsx
+
+2. The component should receive:
+   - trajectory
+   - onStepChange(optional)
+   - speedMs default 700
+
+3. The component must include controls:
+   - Play
+   - Pause
+   - Reset
+   - Step Forward
+   - Step Backward
+   - Speed selector: 250 ms, 500 ms, 700 ms, 1000 ms
+
+4. It must display:
+   - Current step number, e.g. "Step 5 / 16"
+   - Current timestamp
+   - Current X position in mm
+   - Current Y position in mm
+   - Optional current G-code if available
+   - A small progress bar
+
+5. Update TrajectoryCanvas.jsx so it can receive:
+   - trajectory
+   - currentIndex
+   - showFullPath = true
+
+Canvas behavior:
+- Draw the full historical trajectory in light gray if showFullPath is true
+- Draw the completed path up to currentIndex in stronger stroke
+- Draw small points for all samples
+- Draw current tool position as a cyan dot
+- Draw start point and final point with labels
+- Draw axis labels in mm
+- If no trajectory is available, show "No trajectory data available"
+
+6. The replay must not mutate the original trajectory array.
+
+7. Use useState, useEffect, useRef or useMemo as needed.
+
+8. Clean up intervals correctly in useEffect to avoid memory leaks.
+
+9. Integrate into App.jsx:
+   - When Load Samples is clicked, load the trajectory and set currentIndex to the last point or 0 depending on design.
+   - Add a "Replay Motion" section below or beside the trajectory canvas.
+   - TrajectoryReplay controls should update the currentIndex used by TrajectoryCanvas.
+   - Axis values panel should optionally show the current replay point instead of always showing the latest point while replay is active.
+
+10. Add a "Simulated Motion Test" section to TestPanel.jsx:
+   - T-10: Replay starts at step 1
+   - T-11: Step Forward increments currentIndex
+   - T-12: Step Backward decrements currentIndex
+   - T-13: Reset returns to index 0
+   - T-14: Play reaches final point without exceeding array bounds
+
+11. Add comments explaining:
+   - how the replay index works
+   - how the interval is cleaned up
+   - how mm coordinates are mapped to canvas pixels
+   - how the current point is highlighted
+
+12. Keep UI text in English.
+
+13. Do not use animation libraries. Use React state and setInterval.
+
+14. Do not add backend code.
+
+15. Do not break existing parser, dashboard widgets, or Load Current / Load Samples buttons.
+
+Output:
+Generate complete code changes for:
+- TrajectoryReplay.jsx
+- TrajectoryCanvas.jsx
+- App.jsx integration
+- TestPanel.jsx additions
+- CSS additions
+
+Also explain briefly how to test the replay:
+1. Click Load Samples
+2. Click Reset
+3. Click Play
+4. Observe the cyan dot advancing point by point
+5. Use Step Forward and Step Backward"

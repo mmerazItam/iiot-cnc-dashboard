@@ -73,6 +73,10 @@ export function getMachineState(data) {
     return { status: "alarm", label: "ACTIVE ALARM" };
   }
 
+  if (condition === "Fault") {
+    return { status: "alarm", label: "MACHINE FAULT" };
+  }
+
   if (!isMissing(condition) && condition !== "Normal") {
     return { status: "warning", label: "CONDITION WARNING" };
   }
