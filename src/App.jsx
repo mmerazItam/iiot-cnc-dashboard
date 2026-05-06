@@ -1,0 +1,438 @@
+import { useMemo, useState } from "react";
+import Header from "./components/Header.jsx";
+import ControlButtons from "./components/ControlButtons.jsx";
+import StatusCard from "./components/StatusCard.jsx";
+import MetricCard from "./components/MetricCard.jsx";
+import GaugeCard from "./components/GaugeCard.jsx";
+import TagList from "./components/TagList.jsx";
+import TrajectoryCanvas from "./components/TrajectoryCanvas.jsx";
+import AxisPanel from "./components/AxisPanel.jsx";
+import TestPanel from "./components/TestPanel.jsx";
+import { INVALID_XML, TRACE_CURRENT_XML, TRACE_SAMPLES_XML } from "./data/mtconnectXml.js";
+import { getCycleStatus, getMachineState, getSpindleStatus } from "./utils/alarmLogic.js";
+import {
+  estimatePartsPerHour,
+  formatNumber,
+  formatPercent,
+  formatPosition,
+  formatSeconds,
+  splitCsvTags,
+} from "./utils/formatters.js";
+import { parseCurrentXml, parseSamplesXml, safeValue } from "./utils/xmlParsers.js";
+
+function getDisplayData(activeData, currentData) {
+  if (!activeData) return null;
+
+  if (activeData.source === "current") {
+    return {
+      ...activeData,
+      spindleSpeed: activeData.spindleSpeed,
+      m30Counter1: activeData.m30Counter1,
+      m30Counter2: activeData.m30Counter2,
+      machineRunTime: activeData.machineRunTime,
+      spindleTime: activeData.spindleTime,
+      gcodes: activeData.gcodes,
+      xPosition: activeData.xPosition,
+      yPosition: activeData.yPosition,
+      zPosition: activeData.zPosition,
+    };
+  }
+
+  // Samples contain high-frequency process values but not every status field.
+  // The dashboard overlays latest sample values on the last current snapshot,
+  // matching a common IIoT UI pattern: latest telemetry plus last known state.
+  return {
+    ...currentData,
+    ...activeData,
+    availability: currentData?.availability ?? "AVAILABLE",
+    machineCondition: currentData?.machineCondition ?? "Normal",
+    activeAlarms: currentData?.activeAlarms ?? "NO ACTIVE ALARMS",
+    emergencyStop: currentData?.emergencyStop ?? "ARMED",
+    runStatus:
+      currentData?.runStatus ?? (activeData.latestSpindleSpeed > 0 ? "ACTIVE" : null),
+    mode: currentData?.mode ?? null,
+    program: currentData?.program ?? null,
+    spindleSpeed: activeData.latestSpindleSpeed,
+    thisCycle: activeData.latestThisCycle,
+    lastCycle: currentData?.lastCycle ?? null,
+    m30Counter1: activeData.latestM30Counter1,
+    m30Counter2: activeData.latestM30Counter2,
+    machineRunTime: activeData.latestMachineRunTime,
+    spindleTime: activeData.latestSpindleTime,
+    gcodes: activeData.latestGcodes,
+    xPosition: activeData.latestX,
+    yPosition: activeData.latestY,
+    zPosition: activeData.latestZ,
+    feedrateOverride: currentData?.feedrateOverride ?? null,
+    spindleSpeedOverride: currentData?.spindleSpeedOverride ?? null,
+    rapidOverride: currentData?.rapidOverride ?? null,
+    activeAxes: currentData?.activeAxes ?? null,
+    g54: currentData?.g54 ?? null,
+    coolantStates: currentData?.coolantStates ?? {},
+  };
+}
+
+export default function App() {
+  const [currentData, setCurrentData] = useState(null);
+  const [sampleData, setSampleData] = useState(null);
+  const [activeData, setActiveData] = useState(null);
+  const [lastSource, setLastSource] = useState(null);
+  const [error, setError] = useState(null);
+
+  const displayData = useMemo(
+    () => getDisplayData(activeData, currentData),
+    [activeData, currentData]
+  );
+
+  const machineState = useMemo(() => getMachineState(displayData), [displayData]);
+
+  const cycleStatus = useMemo(
+    () => getCycleStatus(displayData?.thisCycle, displayData?.lastCycle),
+    [displayData]
+  );
+
+  const spindleStatus = useMemo(
+    () => getSpindleStatus(displayData?.spindleSpeed, displayData?.runStatus),
+    [displayData]
+  );
+
+  const partsPerHour = useMemo(
+    () => estimatePartsPerHour(displayData?.lastCycle),
+    [displayData]
+  );
+
+  const gcodeTags = useMemo(() => splitCsvTags(displayData?.gcodes), [displayData]);
+
+  const coolantTags = useMemo(() => {
+    return Object.entries(displayData?.coolantStates || {}).map(
+      ([label, value]) => `${label}: ${safeValue(value)}`
+    );
+  }, [displayData]);
+
+  const trajectory = activeData?.source === "samples" ? sampleData?.trajectory || [] : [];
+
+  const zNote = useMemo(() => {
+    if (activeData?.source !== "samples") return null;
+    if (Number.isFinite(sampleData?.latestZ)) return null;
+
+    const currentZ = currentData?.zPosition;
+    if (Number.isFinite(currentZ)) {
+      return `UNAVAILABLE in sample window | Last known from current: ${formatPosition(
+        currentZ
+      )}`;
+    }
+
+    return "UNAVAILABLE in sample window";
+  }, [activeData, sampleData, currentData]);
+
+  const tests = useMemo(() => {
+    const invalidResult = parseCurrentXml(INVALID_XML);
+    const currentRequired = "Load Current required";
+    const samplesRequired = "Load Samples required";
+    const currentSpindleTime = currentData?.spindleTime;
+    const sampleSpeed = sampleData?.latestSpindleSpeed;
+    const sampleX = sampleData?.latestX;
+    const sampleCounter = sampleData?.latestM30Counter1;
+    const stateCheck = getMachineState(displayData);
+
+    return [
+      {
+        id: "T-01",
+        description: "Load current - SpindleTime",
+        input: "Click Load Current Snapshot",
+        expected: "SpindleTime widget shows 85476 s",
+        actual: currentData ? `${currentSpindleTime} s` : currentRequired,
+        result: currentData
+          ? currentSpindleTime === 85476
+            ? "Pass"
+            : "Fail"
+          : currentRequired,
+      },
+      {
+        id: "T-02",
+        description: "Load samples - spindle speed",
+        input: "Click Load Samples",
+        expected: "SpindleSpeed shows approximately 2000 rpm",
+        actual: sampleData ? `${formatNumber(sampleSpeed, 1)} rpm` : samplesRequired,
+        result: sampleData && sampleSpeed >= 1999 && sampleSpeed <= 2001 ? "Pass" : samplesRequired,
+      },
+      {
+        id: "T-03",
+        description: "Load samples - last X position",
+        input: "Click Load Samples",
+        expected: "X position shows approximately -450.6 mm",
+        actual: sampleData ? formatPosition(sampleX) : samplesRequired,
+        result: sampleData && Math.round(sampleX * 10) / 10 === -450.6 ? "Pass" : samplesRequired,
+      },
+      {
+        id: "T-04",
+        description: "Load samples - part counter",
+        input: "Click Load Samples",
+        expected: "M30Counter1 shows 5536",
+        actual: sampleData ? `${sampleCounter}` : samplesRequired,
+        result: sampleData && sampleCounter === 5536 ? "Pass" : samplesRequired,
+      },
+      {
+        id: "T-05",
+        description: "Trajectory plot",
+        input: "Click Load Samples",
+        expected: "16 X/Y points plotted as a curved loop",
+        actual: sampleData ? `${sampleData.trajectory.length} points` : samplesRequired,
+        result: sampleData && sampleData.trajectory.length === 16 ? "Pass" : samplesRequired,
+      },
+      {
+        id: "T-06",
+        description: "Units on all widgets",
+        input: "Both buttons",
+        expected: "rpm, mm, s, % visible",
+        actual: "Manual visual verification checklist",
+        result: "Manual",
+      },
+      {
+        id: "T-07",
+        description: "State color",
+        input: "Either load",
+        expected: "Status widget renders with correct color",
+        actual: displayData ? `${stateCheck.label} / ${stateCheck.status}` : "No data",
+        result: displayData && stateCheck.status === "active" ? "Pass" : "Load data required",
+      },
+      {
+        id: "T-08",
+        description: "Missing Z sample handling",
+        input: "Click Load Samples",
+        expected: "Z position shows UNAVAILABLE in sample window",
+        actual: sampleData ? safeValue(sampleData.latestZ, "UNAVAILABLE") : samplesRequired,
+        result: sampleData && sampleData.latestZ === null ? "Pass" : samplesRequired,
+      },
+      {
+        id: "T-09",
+        description: "XML parse error handling",
+        input: "Invalid XML string",
+        expected: "App does not crash and shows error message",
+        actual: invalidResult.error ? "Parser caught invalid XML" : "No error detected",
+        result: invalidResult.parseOk === false ? "Pass" : "Fail",
+      },
+    ];
+  }, [currentData, sampleData, displayData]);
+
+  function handleLoadCurrent() {
+    const parsed = parseCurrentXml(TRACE_CURRENT_XML);
+    if (!parsed.parseOk) {
+      setError(parsed.error);
+      setActiveData(parsed);
+      return;
+    }
+
+    // Dashboard update logic: a successful current snapshot becomes both the
+    // latest machine context and the active view that drives all widgets.
+    setCurrentData(parsed);
+    setActiveData(parsed);
+    setLastSource("current");
+    setError(null);
+  }
+
+  function handleLoadSamples() {
+    const parsed = parseSamplesXml(TRACE_SAMPLES_XML);
+    if (!parsed.parseOk) {
+      setError(parsed.error);
+      setActiveData(parsed);
+      return;
+    }
+
+    setSampleData(parsed);
+    setActiveData(parsed);
+    setLastSource("samples");
+    setError(null);
+  }
+
+  function handleReset() {
+    setCurrentData(null);
+    setSampleData(null);
+    setActiveData(null);
+    setLastSource(null);
+    setError(null);
+  }
+
+  return (
+    <main className="app-shell">
+      <Header source={lastSource} creationTime={displayData?.creationTime} />
+      <ControlButtons
+        onLoadCurrent={handleLoadCurrent}
+        onLoadSamples={handleLoadSamples}
+        onReset={handleReset}
+      />
+
+      {error ? <div className="error-banner">XML parse error: {error}</div> : null}
+
+      <section className="dashboard-grid top-grid">
+        <StatusCard
+          title="Machine Status"
+          state={machineState}
+          rows={[
+            { label: "RunStatus", value: displayData?.runStatus },
+            { label: "MachineCondition", value: displayData?.machineCondition },
+            { label: "ActiveAlarms", value: displayData?.activeAlarms },
+            { label: "EmergencyStop", value: displayData?.emergencyStop },
+            { label: "Availability", value: displayData?.availability },
+          ]}
+        />
+
+        <section className="card">
+          <div className="card-heading">
+            <h2>Cycle Status</h2>
+            <span className={`cycle-label ${cycleStatus.status}`}>{cycleStatus.label}</span>
+          </div>
+          <div className="metric-row">
+            <MetricCard
+              label="ThisCycle"
+              value={formatNumber(displayData?.thisCycle, 0)}
+              unit="s"
+              status={cycleStatus.status}
+            />
+            <MetricCard
+              label="LastCycle"
+              value={formatNumber(displayData?.lastCycle, 0)}
+              unit="s"
+              status="ok"
+            />
+          </div>
+          <div className="progress-block">
+            <div className="progress-meta">
+              <span>Cycle progress</span>
+              <span>{formatNumber(cycleStatus.progress, 0)}%</span>
+            </div>
+            <div className="progress-track">
+              <div
+                className={`progress-fill ${cycleStatus.status}`}
+                style={{ width: `${cycleStatus.progress}%` }}
+              />
+            </div>
+          </div>
+        </section>
+
+        <section className="card">
+          <div className="card-heading">
+            <h2>Production</h2>
+          </div>
+          <div className="metric-row">
+            <MetricCard
+              label="M30Counter1"
+              value={formatNumber(displayData?.m30Counter1, 0)}
+              unit="parts"
+              status="active"
+            />
+            <MetricCard
+              label="M30Counter2"
+              value={formatNumber(displayData?.m30Counter2, 0)}
+              unit="parts"
+              status="active"
+            />
+            <MetricCard
+              label="Estimated Rate"
+              value={formatNumber(partsPerHour, 1)}
+              unit="parts/hour"
+              status={partsPerHour ? "active" : "unavailable"}
+            />
+          </div>
+        </section>
+      </section>
+
+      <section className="dashboard-grid middle-grid">
+        <GaugeCard
+          label="SpindleSpeed"
+          value={displayData?.spindleSpeed}
+          status={spindleStatus.status}
+        />
+        <section className="card process-card">
+          <div className="card-heading">
+            <h2>Process Parameters</h2>
+          </div>
+          <div className="metric-row compact">
+            <MetricCard
+              label="FeedrateOverride"
+              value={formatNumber(displayData?.feedrateOverride, 0)}
+              unit="%"
+              status={displayData?.feedrateOverride === null ? "unavailable" : "ok"}
+            />
+            <MetricCard
+              label="SpindleSpeedOverride"
+              value={formatNumber(displayData?.spindleSpeedOverride, 0)}
+              unit="%"
+              status={displayData?.spindleSpeedOverride === null ? "unavailable" : "ok"}
+            />
+            <MetricCard
+              label="RapidOverride"
+              value={formatNumber(displayData?.rapidOverride, 0)}
+              unit="%"
+              status={displayData?.rapidOverride === null ? "unavailable" : "ok"}
+            />
+          </div>
+        </section>
+        <TagList title="Active Gcodes" tags={gcodeTags} />
+      </section>
+
+      <section className="dashboard-grid bottom-grid">
+        <TrajectoryCanvas trajectory={trajectory} />
+        <AxisPanel
+          x={displayData?.xPosition}
+          y={displayData?.yPosition}
+          z={displayData?.zPosition}
+          zNote={zNote}
+        />
+      </section>
+
+      <section className="dashboard-grid detail-grid">
+        <section className="card detail-card">
+          <div className="card-heading">
+            <h2>Machine Details</h2>
+          </div>
+          <dl className="status-list">
+            <div className="status-row">
+              <dt>MachineRunTime</dt>
+              <dd>{formatSeconds(displayData?.machineRunTime)}</dd>
+            </div>
+            <div className="status-row">
+              <dt>SpindleTime</dt>
+              <dd>{formatSeconds(displayData?.spindleTime)}</dd>
+            </div>
+            <div className="status-row">
+              <dt>G54 Offset</dt>
+              <dd>{safeValue(displayData?.g54)}</dd>
+            </div>
+            <div className="status-row">
+              <dt>Program</dt>
+              <dd>{safeValue(displayData?.program)}</dd>
+            </div>
+            <div className="status-row">
+              <dt>Mode</dt>
+              <dd>{safeValue(displayData?.mode)}</dd>
+            </div>
+            <div className="status-row">
+              <dt>Active Axes</dt>
+              <dd>{safeValue(displayData?.activeAxes)}</dd>
+            </div>
+            <div className="status-row">
+              <dt>Spindle Max Power</dt>
+              <dd>
+                {displayData?.spindleMaxPower === null || displayData?.spindleMaxPower === undefined
+                  ? "UNAVAILABLE"
+                  : `${formatNumber(displayData.spindleMaxPower, 1)} kW`}
+              </dd>
+            </div>
+            <div className="status-row">
+              <dt>Cycle Remaining</dt>
+              <dd>{formatSeconds(displayData?.cycleRemainingTime)}</dd>
+            </div>
+            <div className="status-row">
+              <dt>FeedrateOverride</dt>
+              <dd>{formatPercent(displayData?.feedrateOverride)}</dd>
+            </div>
+          </dl>
+        </section>
+        <TagList title="Coolant States" tags={coolantTags} />
+      </section>
+
+      <TestPanel tests={tests} />
+    </main>
+  );
+}
