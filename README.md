@@ -7,11 +7,12 @@ React + Vite dashboard for CNC production monitoring with embedded MTConnect XML
 - Machine: Haas TM-1P
 - Serial number: `1131432`
 - Source format: MTConnect XML
-- Embedded files represented in code:
-  - `Trace_current.xml`
-  - `Trace_samples.xml`
+- Real XML files bundled as strings:
+  - `lib/Trace_current.xml`
+  - `lib/Trace_probe.xml`
+  - `lib/Trace_samples.xml`
 
-The XML snippets are stored in `src/data/mtconnectXml.js`. They include the relevant `dataItemId` values used by the parser and can be replaced with the full original XML strings later.
+The XML constants are exported from `src/data/mtconnectXml.js` using Vite `?raw` imports. This keeps the app frontend-only while using the complete local MTConnect XML files instead of shortened demo snippets.
 
 ## Install
 
@@ -47,6 +48,7 @@ Then open the local Vite URL shown in the terminal.
 
 - The app has no backend and does not load external XML files.
 - XML is parsed in-browser with `DOMParser`.
+- The real XML files in `lib/` are bundled at build time as text constants.
 - MTConnect values are selected with `querySelectorAll('[dataItemId="..."]')`.
 - Missing values are never coerced to zero; the UI shows `UNAVAILABLE`.
 - The trajectory is drawn manually with HTML5 canvas.
